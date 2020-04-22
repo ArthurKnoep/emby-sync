@@ -5,6 +5,6 @@ interface Context {
     authenticator: Authenticator
 }
 
-export const ConnectCtx = createContext<Context>({
+export const EmbyCtx = createContext<Context>({
     authenticator: new Authenticator()
-})
+});

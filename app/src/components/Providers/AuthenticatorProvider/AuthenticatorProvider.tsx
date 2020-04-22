@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { ConnectCtx } from '../../../features/emby/connectCtx';
+import { EmbyCtx } from '../../../features/emby/embyCtx';
 import { Authenticator } from '../../../features/emby/connect';
 
 interface Props {
@@ -8,8 +8,8 @@ interface Props {
 
 export function AuthenticatorProvider({ children }: Props) {
     return (
-        <ConnectCtx.Provider value={{authenticator: new Authenticator()}}>
+        <EmbyCtx.Provider value={{authenticator: new Authenticator()}}>
             {children}
-        </ConnectCtx.Provider>
+        </EmbyCtx.Provider>
     )
 }

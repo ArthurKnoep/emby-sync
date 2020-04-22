@@ -1,16 +1,20 @@
 import axios from 'axios';
+import path from 'path';
 import { EventEmitter } from 'events';
-import { APPLICATION_NAME } from './emby';
-import { LoginInfoI, ServerI } from './interface';
+import { Device } from './device';
+import { APPLICATION_NAME, APPLICATION_VERSION } from './emby';
+import { ExchangeI, LoginInfoI, PingServerI, ServerI } from './interface';
 
 const EMBY_SYNC_LOGIN_INFO = 'emby_sync_login_info';
 
 export class Authenticator extends EventEmitter {
     private loginInfo: LoginInfoI | null;
+    private device: Device;
 
     constructor() {
         super();
         this.loginInfo = null;
+        this.device = new Device();
         const loginInfo = window.localStorage.getItem(EMBY_SYNC_LOGIN_INFO);
         if (loginInfo !== null) {
             try {
@@ -28,13 +32,13 @@ export class Authenticator extends EventEmitter {
         bodyFormData.set('rawpw', password);
         return axios.post('https://connect.emby.media/service/user/authenticate', bodyFormData, {
             headers: {
-                'X-Application': APPLICATION_NAME
+                'X-Application': `${APPLICATION_NAME}/${APPLICATION_VERSION}`
             }
         })
             .then(resp => {
-                this.emit('login:update', {status: true});
-                this.loginInfo = resp.data;
+                this.loginInfo = (resp.data as LoginInfoI);
                 window.localStorage.setItem(EMBY_SYNC_LOGIN_INFO, JSON.stringify(resp.data));
+                this.emit('login:update', {status: true});
                 return (resp.data as LoginInfoI);
             })
     }
@@ -48,11 +52,35 @@ export class Authenticator extends EventEmitter {
                 'userId': this.loginInfo?.User.Id
             },
             headers: {
-                'X-Application': APPLICATION_NAME,
+                'X-Application': `${APPLICATION_NAME}/${APPLICATION_VERSION}`,
                 'X-Connect-UserToken': this.loginInfo?.AccessToken
             }
         })
             .then(resp => (resp.data as ServerI[]))
+    }
+
+    async pingServer(server: ServerI): Promise<PingServerI> {
+        const url = new URL(server.Url);
+        url.pathname = path.join(url.pathname, "/emby/system/info/public");
+        return axios.get(url.toString()).then(resp => resp.data);
+    }
+
+    async exchangeToken(server: ServerI): Promise<ExchangeI> {
+        const url = new URL(server.Url);
+        url.pathname = path.join(url.pathname, "/emby/Connect/Exchange");
+        return axios.get(url.toString(), {
+            params: {
+                format: 'json',
+                ConnectUserId: this.loginInfo?.User.Id
+            },
+            headers: {
+                'X-Emby-Client': APPLICATION_NAME,
+                'X-Emby-Client-Version': APPLICATION_VERSION,
+                'X-Emby-Device-Id': this.device.getDeviceId(),
+                'X-Emby-Device-Name': this.device.getDeviceName(),
+                'X-Emby-Token': server.AccessKey
+            }
+        }).then(resp => resp.data);
     }
 
     isLogin(): boolean {
@@ -61,6 +89,7 @@ export class Authenticator extends EventEmitter {
 
     logout() {
         window.localStorage.removeItem(EMBY_SYNC_LOGIN_INFO);
+        this.loginInfo = null;
         this.emit('login:update', {status: false});
     }
 }

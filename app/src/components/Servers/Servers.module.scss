@@ -1,0 +1,15 @@
+.container {
+	margin-top: 3em;
+
+	.loader {
+		text-align: center;
+	}
+
+	.serverCard {
+		cursor: pointer;
+
+		.serverName {
+			text-align: center;
+		}
+	}
+}

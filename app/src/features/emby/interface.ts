@@ -22,3 +22,16 @@ export interface ServerI {
     UserType: string;
     SupporterKey: string;
 }
+
+export interface PingServerI {
+    Id: string;
+    LocalAddress: string;
+    ServerName: string;
+    Version: string;
+    WanAddress: string;
+}
+
+export interface ExchangeI {
+    AccessToken: string
+    LocalUserId: string
+}

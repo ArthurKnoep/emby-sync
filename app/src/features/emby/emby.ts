@@ -1,1 +1,2 @@
-export const APPLICATION_NAME = 'Emby Sync/0.0.1';
+export const APPLICATION_NAME = 'Emby Sync';
+export const APPLICATION_VERSION = '0.0.1';
