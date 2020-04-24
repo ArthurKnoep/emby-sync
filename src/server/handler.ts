@@ -45,7 +45,7 @@ export class Handler {
             } catch (e) {
                 return socket.emit('user:name', errorToInterface(e))
             }
-            return socket.emit('room:name', {status: true});
+            return socket.emit('user:name', {status: true});
         }
     }
 
@@ -59,7 +59,7 @@ export class Handler {
             } catch (e) {
                 return socket.emit('room:create', errorToInterface(e))
             }
-            return socket.emit('room:create', {status: true});
+            return socket.emit('room:create', {status: true, room_name: msg.room_name});
         };
     }
 
@@ -73,7 +73,7 @@ export class Handler {
             } catch (e) {
                 return socket.emit('room:join', errorToInterface(e))
             }
-            return socket.emit('room:join', {status: true});
+            return socket.emit('room:join', {status: true, room_name: msg.room_name});
         };
     }
 

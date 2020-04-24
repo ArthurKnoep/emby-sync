@@ -120,6 +120,12 @@ export class Pool {
         }
         user.currentRoom = roomName;
         user.socket.join(roomName);
+        this.io.to(roomName).emit('room:update', {
+            type: 'join',
+            data: {
+                username: user.username,
+            }
+        });
     }
 
     leaveRoom(userId: string) {
@@ -134,12 +140,17 @@ export class Pool {
         user.currentRoom = '';
         user.socket.leave(roomName, () => {
             this.io.in(roomName).clients((err, users) => {
-                console.log(err, users);
                 if (!err && users.length === 0) {
                     delete this.pool.rooms[roomName];
+                } else if (!err) {
+                    this.io.to(roomName).emit('room:update', {
+                        type: 'leave',
+                        data: {
+                            username: user.username,
+                        }
+                    });
                 }
             });
-
         });
     }
 }

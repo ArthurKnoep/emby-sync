@@ -6,15 +6,17 @@ import { EmbyCtx } from '../../features/emby/embyCtx';
 import { ServerI } from '../../features/emby/interface';
 import styles from './Servers.module.scss';
 import { SocketCtx } from '../../features/socket';
+import { useRoomInfo } from '../../features/socket/hooks';
 
 export function Servers() {
     const { authenticator } = useContext(EmbyCtx);
     const { socket } = useContext(SocketCtx);
+    const { connected } = useRoomInfo();
     const [servers, setServers] = useState<ServerI[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        if (socket.getCurrentRoom()) {
+        if (connected) {
             authenticator.listServer()
                 .then(serversApi => {
                     setServers(serversApi);
@@ -22,7 +24,7 @@ export function Servers() {
                 })
         }
     }, [authenticator, socket]);
-    if (!socket.getCurrentRoom()) {
+    if (!connected) {
         return <Redirect to="/" />
     }
     return (

@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Steps as StepsAnt } from 'antd';
 import {useHistory} from 'react-router-dom';
-import { SocketCtx } from '../../features/socket';
+import { useRoomInfo } from '../../features/socket/hooks';
 
 const { Step } = StepsAnt;
 
@@ -10,14 +10,13 @@ interface Props {
 }
 
 export function Steps({ current }: Props) {
-    const { socket } = useContext(SocketCtx);
-    const roomName = socket.getCurrentRoom();
+    const { connected, info } = useRoomInfo();
     const history = useHistory();
     return (
         <StepsAnt current={current}>
-            <Step title={(roomName) ? `Rooms: ${roomName}`: 'Rooms'} onClick={() => history.push('/rooms')}/>
+            <Step title={(connected) ? `Rooms: ${info?.room_name}`: 'Rooms'} onClick={() => history.push('/rooms')}/>
             <Step title="Items"  onClick={() => {
-                if (roomName) {
+                if (connected) {
                     history.push('/servers');
                 }
             }}/>

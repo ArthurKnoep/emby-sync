@@ -11,3 +11,10 @@ export interface JoinRoomRequest {
     room_name: string
     room_password?: string
 }
+
+export interface RoomI {
+    connected: boolean
+    info?: {
+        room_name: string
+    }
+}
