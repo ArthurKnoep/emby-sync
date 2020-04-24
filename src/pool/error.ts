@@ -47,3 +47,10 @@ export class RoomBadPasswordError extends PoolError {
         this.name = "RoomBadPassword";
     }
 }
+
+export class NotInARoomError extends PoolError {
+    constructor() {
+        super("The user is not in a room");
+        this.name = "NotInARoom";
+    }
+}

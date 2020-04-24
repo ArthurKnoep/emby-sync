@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import { notification } from 'antd';
 import { CancelablePromise } from '../../utils';
-import { CreateRoomRequest, JoinRoomRequest, Response } from './interface';
+import { CreateRoomRequest, JoinRoomRequest, Response, UserInRoomI } from './interface';
 
 export class Socket {
     private readonly socket: SocketIOClient.Socket;
@@ -102,6 +102,19 @@ export class Socket {
             });
             this.socket.emit('room:join', req);
         })
+    }
+
+    async listUserInRoom(): Promise<UserInRoomI> {
+        await this.waitForConnection();
+        return new Promise((resolve, reject) => {
+            this.socket.once('room:list', (resp: UserInRoomI) => {
+                if (resp.status) {
+                    return resolve(resp);
+                }
+                return reject(resp);
+            });
+            this.socket.emit('room:list');
+        });
     }
 
     getCurrentRoom(): string | undefined {

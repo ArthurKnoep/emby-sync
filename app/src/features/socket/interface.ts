@@ -18,3 +18,11 @@ export interface RoomI {
         room_name: string
     }
 }
+
+export interface UserInRoomI {
+    status: true
+    users: [{
+        username: string
+        uuid: string
+    }]
+}

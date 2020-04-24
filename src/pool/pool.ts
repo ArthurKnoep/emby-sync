@@ -1,5 +1,7 @@
 import { Server, Socket } from 'socket.io'
+import { v4 as uuid} from 'uuid';
 import {
+    NotInARoomError, PoolError,
     RoomAlreadyExistError,
     RoomBadPasswordError,
     RoomNotFoundError,
@@ -11,6 +13,7 @@ interface UserI {
     socket: Socket
     connexionDate: Date
     username?: string
+    uuid: string
     currentRoom: string
 }
 
@@ -23,6 +26,11 @@ interface RoomI {
 interface PoolI {
     users: {[index: string]: UserI}
     rooms: {[index: string]: RoomI}
+}
+
+interface UserInRoom {
+    username: string;
+    uuid: string;
 }
 
 export class Pool {
@@ -43,6 +51,7 @@ export class Pool {
     addUser(socket: Socket) {
         this.pool.users[socket.id] = {
             socket,
+            uuid: uuid(),
             connexionDate: new Date(),
             currentRoom: ''
         };
@@ -120,37 +129,62 @@ export class Pool {
         }
         user.currentRoom = roomName;
         user.socket.join(roomName);
-        this.io.to(roomName).emit('room:update', {
+        user.socket.broadcast.to(roomName).emit('room:update', {
             type: 'join',
             data: {
                 username: user.username,
+                uuid: user.uuid
             }
         });
     }
 
     leaveRoom(userId: string) {
         const user = this.getUserAndThrow(userId);
-        if (!user.username) {
-            throw new UsernameNotSetError();
-        }
         if (!user.currentRoom) {
             return;
         }
         const roomName = user.currentRoom;
         user.currentRoom = '';
+        user.socket.broadcast.to(roomName).emit('room:update', {
+            type: 'leave',
+            data: {
+                username: user.username,
+                uuid: user.uuid
+            }
+        });
         user.socket.leave(roomName, () => {
             this.io.in(roomName).clients((err, users) => {
                 if (!err && users.length === 0) {
                     delete this.pool.rooms[roomName];
-                } else if (!err) {
-                    this.io.to(roomName).emit('room:update', {
-                        type: 'leave',
-                        data: {
-                            username: user.username,
-                        }
-                    });
                 }
             });
         });
+    }
+
+    async listRoom(userId: string): Promise<UserInRoom[]> {
+        return new Promise((resolve, reject) => {
+            const user = this.getUserAndThrow(userId);
+            if (!user.currentRoom) {
+                return reject(new NotInARoomError());
+            }
+            const roomName = user.currentRoom;
+            this.io.in(roomName).clients((err, users) => {
+                if (err) {
+                    return reject(new PoolError("Could not list users in room"))
+                }
+                const usersProm: UserInRoom[] = [];
+                users.forEach(elem => {
+                    const user = this.getUser(elem);
+                    if (user) {
+                        usersProm.push({
+                            username: user.username,
+                            uuid: user.uuid
+                        });
+                    }
+                });
+                resolve(usersProm);
+            })
+        });
+
     }
 }

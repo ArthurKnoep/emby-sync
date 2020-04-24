@@ -15,12 +15,14 @@ export function useRoomInfo(): RoomI {
     const [room, setRoomInfo] = useState<RoomI>(defaultValue);
 
     const handleConnect = useCallback((msg) => {
-        setRoomInfo({
-            connected: true,
-            info: {
-                room_name: msg.room_name
-            }
-        })
+        if (msg.status) {
+            setRoomInfo({
+                connected: true,
+                info: {
+                    room_name: msg.room_name
+                }
+            });
+        }
     }, [setRoomInfo]);
 
     const handleDisconnect = useCallback(() => {
@@ -38,6 +40,6 @@ export function useRoomInfo(): RoomI {
             socket.getSocket().off('room:leave', handleDisconnect);
             socket.getSocket().off('disconnect', handleDisconnect);
         }
-    }, [socket]);
+    }, [socket, handleConnect, handleDisconnect]);
     return room;
 }

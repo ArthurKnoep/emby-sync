@@ -1,8 +1,10 @@
 import React, { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Layout as LayoutAnt, Menu } from 'antd';
+import { Layout as LayoutAnt, Menu, Row, Col } from 'antd';
 import styles from './Layout.module.scss';
 import { Latency } from './Latency';
+import { useRoomInfo } from '../../features/socket/hooks';
+import { RoomBox } from './RoomBox';
 
 const { Header, Content, Footer } = LayoutAnt;
 
@@ -12,6 +14,7 @@ interface Props {
 }
 
 export function Layout({ children, isAuthenticated }: Props) {
+    const { connected: roomConnected, info } = useRoomInfo();
     return (
         <LayoutAnt className={styles.layout}>
             <Header>
@@ -25,6 +28,7 @@ export function Layout({ children, isAuthenticated }: Props) {
             </Header>
             <Content className={styles.content}>
                 {children}
+                <RoomBox />
             </Content>
             <Footer style={{textAlign: 'center'}}>
                 EmbySync, 2020

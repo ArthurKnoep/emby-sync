@@ -22,6 +22,7 @@ export class Handler {
             socket.on('room:create', this.handleCreateRoom(socket));
             socket.on('room:join', this.handleJoinRoom(socket));
             socket.on('room:leave', this.handleLeaveRoom(socket));
+            socket.on('room:list', this.handleListUser(socket));
 
             socket.on('disconnect', () => {
                 this.pool.delUser(socket.id);
@@ -80,11 +81,19 @@ export class Handler {
     handleLeaveRoom(socket: Socket) {
         return () => {
             try {
-                this.pool.leaveRoom(socket.id)
+                this.pool.leaveRoom(socket.id);
             } catch (e) {
                 return socket.emit('room:leave', errorToInterface(e))
             }
             return socket.emit('room:leave', {status: true});
+        };
+    }
+
+    handleListUser(socket: Socket) {
+        return () => {
+            this.pool.listRoom(socket.id)
+                .then(userList => socket.emit('room:list', {status:true, users: userList}))
+                .catch(err => socket.emit('room:list', errorToInterface(err)))
         };
     }
 }

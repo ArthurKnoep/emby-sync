@@ -1,0 +1,23 @@
+.chatBox {
+	background-color: #1f1f1f;
+	height: 100%;
+	width: 20.8333%;
+	position: fixed;
+	right: 0;
+	top: 64px;
+	transition: right 0.3s ease-in-out;
+
+	&.hide{
+		right: -20.8333%;
+	}
+
+	.roomName {
+		padding: 20px 10px;
+		text-align: center;
+		background-color: #151515;
+
+		h4 {
+			margin: 0;
+		}
+	}
+}

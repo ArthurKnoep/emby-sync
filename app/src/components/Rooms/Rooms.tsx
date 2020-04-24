@@ -5,7 +5,6 @@ import { Steps } from "../Steps";
 import styles from './Rooms.module.scss';
 import { CreateRoom } from "./CreateRoom";
 import { JoinRoom } from "./JoinRoom";
-import { Latency } from '../Layout/Latency';
 
 interface Tab {
     key: string;
@@ -27,12 +26,11 @@ const tabList: Tab[] = [
 ];
 
 export function Rooms() {
-    const { socket } = useContext(SocketCtx);
     const [activeTab, setActiveTab] = useState<string>(tabList[0].key);
     return (
         <Row>
             <Col span={14} offset={5}>
-                <Steps current={0}/>
+                <Steps current={0} />
                 <div className={styles.container}>
                     <Card
                         title="Rooms"
