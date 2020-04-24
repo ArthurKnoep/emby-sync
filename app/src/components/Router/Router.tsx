@@ -1,12 +1,13 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useContext, useEffect } from 'react';
 import { BrowserRouter, Switch, Redirect, Route } from 'react-router-dom';
-import { useIsAuthenticated } from '../../features/emby/hook';
+import { useIsAuthenticated, useUserInfo } from '../../features/emby/hook';
 import { Layout } from '../Layout';
 import { Login } from '../Login';
 import { Home } from '../Home';
 import { Logout } from '../Logout';
 import { Rooms } from "../Rooms";
 import { Servers } from "../Servers";
+import { SocketCtx } from '../../features/socket';
 
 enum AuthState {
     AUTH = 0b01,
@@ -67,6 +68,8 @@ function DefaultRedirect({ authState }: DefaultRedirectProps) {
 
 export function Router() {
     const isLogin = useIsAuthenticated();
+    const userInfo = useUserInfo();
+    const { socket } = useContext(SocketCtx);
     const authState = isLogin ? AuthState.AUTH : AuthState.NOT_AUTH;
 
     const getRedirectTo = (path: string | string[]): string => {
@@ -76,6 +79,15 @@ export function Router() {
             return encodeURIComponent(path);
         }
     };
+
+    useEffect(() => {
+        if (isLogin && userInfo) {
+            socket.setUsername(userInfo.username)
+                .catch(err => {
+                    console.error(err);
+                })
+        }
+    }, [isLogin, userInfo, socket]);
 
     return (
         <BrowserRouter>

@@ -1,9 +1,11 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useState, useContext, useEffect } from "react";
 import { Row, Col, Card } from 'antd';
+import { SocketCtx } from '../../features/socket';
 import { Steps } from "../Steps";
 import styles from './Rooms.module.scss';
 import { CreateRoom } from "./CreateRoom";
 import { JoinRoom } from "./JoinRoom";
+import { Latency } from '../Layout/Latency';
 
 interface Tab {
     key: string;
@@ -25,6 +27,7 @@ const tabList: Tab[] = [
 ];
 
 export function Rooms() {
+    const { socket } = useContext(SocketCtx);
     const [activeTab, setActiveTab] = useState<string>(tabList[0].key);
     return (
         <Row>

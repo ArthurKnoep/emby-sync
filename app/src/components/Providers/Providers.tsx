@@ -1,5 +1,6 @@
 import React, { ReactChild } from 'react';
 import { AuthenticatorProvider } from './AuthenticatorProvider';
+import { SocketProvider } from './SocketProvider';
 
 interface Props {
     children: ReactChild;
@@ -8,7 +9,9 @@ interface Props {
 export function Providers({ children }: Props) {
     return (
         <AuthenticatorProvider>
-            {children}
+            <SocketProvider>
+                {children}
+            </SocketProvider>
         </AuthenticatorProvider>
     )
 }

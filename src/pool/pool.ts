@@ -3,13 +3,14 @@ import {
     RoomAlreadyExistError,
     RoomBadPasswordError,
     RoomNotFoundError,
-    UserAlreadyInRoomError,
+    UserAlreadyInRoomError, UsernameNotSetError,
     UserNotFoundError
 } from './error';
 
 interface UserI {
     socket: Socket
     connexionDate: Date
+    username?: string
     currentRoom: string
 }
 
@@ -59,15 +60,31 @@ export class Pool {
         return this.pool.users[userId];
     }
 
-    private getRoom(roomName: string): RoomI | undefined {
-        return this.pool.rooms[roomName];
-    }
-
-    createRoom(userId: string, roomName: string, password?: string) {
+    private getUserAndThrow(userId: string): UserI {
         const user = this.getUser(userId);
         if (!user) {
             throw new UserNotFoundError();
         }
+        if (!user.username) {
+            throw new UsernameNotSetError();
+        }
+        return user;
+    }
+
+    private getRoom(roomName: string): RoomI | undefined {
+        return this.pool.rooms[roomName];
+    }
+
+    setUserName(userId: string, username: string) {
+        const user = this.getUser(userId);
+        if (!user) {
+            throw new UserNotFoundError();
+        }
+        user.username = username
+    }
+
+    createRoom(userId: string, roomName: string, password?: string) {
+        const user = this.getUserAndThrow(userId);
         if (user.currentRoom) {
             throw new UserAlreadyInRoomError();
         }
@@ -90,10 +107,7 @@ export class Pool {
     }
 
     joinRoom(userId: string, roomName: string, password?: string) {
-        const user = this.getUser(userId);
-        if (!user) {
-            throw new UserNotFoundError();
-        }
+        const user = this.getUserAndThrow(userId);
         if (user.currentRoom) {
             throw new UserAlreadyInRoomError();
         }
@@ -109,9 +123,9 @@ export class Pool {
     }
 
     leaveRoom(userId: string) {
-        const user = this.getUser(userId);
-        if (!user) {
-            throw new UserNotFoundError();
+        const user = this.getUserAndThrow(userId);
+        if (!user.username) {
+            throw new UsernameNotSetError();
         }
         if (!user.currentRoom) {
             return;

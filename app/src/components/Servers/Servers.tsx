@@ -1,22 +1,30 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { Redirect } from 'react-router-dom';
 import { Card, Col, Row, Spin, Typography } from "antd";
 import { Steps } from "../Steps";
 import { EmbyCtx } from '../../features/emby/embyCtx';
 import { ServerI } from '../../features/emby/interface';
 import styles from './Servers.module.scss';
+import { SocketCtx } from '../../features/socket';
 
 export function Servers() {
     const { authenticator } = useContext(EmbyCtx);
+    const { socket } = useContext(SocketCtx);
     const [servers, setServers] = useState<ServerI[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        authenticator.listServer()
-            .then(serversApi => {
-                setServers(serversApi);
-                setIsLoading(false);
-            })
-    }, []);
+        if (socket.getCurrentRoom()) {
+            authenticator.listServer()
+                .then(serversApi => {
+                    setServers(serversApi);
+                    setIsLoading(false);
+                })
+        }
+    }, [authenticator, socket]);
+    if (!socket.getCurrentRoom()) {
+        return <Redirect to="/" />
+    }
     return (
         <Row>
             <Col span={14} offset={5}>

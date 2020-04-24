@@ -87,6 +87,13 @@ export class Authenticator extends EventEmitter {
         return (!!this.loginInfo && !!this.loginInfo.AccessToken);
     }
 
+    getUsername(): string | null {
+        if (!this.loginInfo) {
+            return null;
+        }
+        return this.loginInfo.User.DisplayName;
+    }
+
     logout() {
         window.localStorage.removeItem(EMBY_SYNC_LOGIN_INFO);
         this.loginInfo = null;

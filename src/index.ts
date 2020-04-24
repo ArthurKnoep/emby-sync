@@ -11,6 +11,6 @@ const io = SocketIO(server);
 const h = new Handler(io, new Pool(io));
 h.handle();
 
-server.listen(3000, () => {
-    console.log('listening on *:3000');
+server.listen(process.env.PORT || 3000, () => {
+    console.log(`listening on *:${process.env.PORT || 3000}`);
 });

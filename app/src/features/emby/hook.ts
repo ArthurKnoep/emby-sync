@@ -16,3 +16,21 @@ export function useIsAuthenticated() {
 
     return state;
 }
+
+export interface UserInfo {
+    username: string
+}
+
+export function useUserInfo(): UserInfo | null {
+    const isLogin = useIsAuthenticated();
+    const { authenticator } = useContext(EmbyCtx);
+
+    if (!isLogin) {
+        return null
+    }
+    const username = authenticator.getUsername();
+    if (!username) {
+        return null;
+    }
+    return { username };
+}

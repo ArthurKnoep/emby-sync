@@ -15,7 +15,9 @@ export class Handler {
         this.io.on('connection', socket => {
             this.pool.addUser(socket);
 
-            socket.on('ping', this.handlePing(socket));
+            socket.on('latency', this.handlePing(socket));
+
+            socket.on('user:name', this.handleSetUserName(socket));
 
             socket.on('room:create', this.handleCreateRoom(socket));
             socket.on('room:join', this.handleJoinRoom(socket));
@@ -29,7 +31,21 @@ export class Handler {
 
     handlePing(socket: Socket) {
         return () => {
-            socket.emit('pong', {status: true});
+            socket.emit('latency', {status: true});
+        }
+    }
+
+    handleSetUserName(socket: Socket) {
+        return msg => {
+            if (!msg.username) {
+                return socket.emit('user:name', InvalidArgE)
+            }
+            try {
+                this.pool.setUserName(socket.id, msg.username)
+            } catch (e) {
+                return socket.emit('user:name', errorToInterface(e))
+            }
+            return socket.emit('room:name', {status: true});
         }
     }
 

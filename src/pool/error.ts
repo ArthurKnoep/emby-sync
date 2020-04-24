@@ -13,6 +13,13 @@ export class UserNotFoundError extends PoolError {
     }
 }
 
+export class UsernameNotSetError extends PoolError {
+    constructor() {
+        super("The user name hasn't been set, use user:name before");
+        this.name = "UsernameNotSet";
+    }
+}
+
 export class UserAlreadyInRoomError extends PoolError {
     constructor() {
         super("User is already in a room, please leave before");
