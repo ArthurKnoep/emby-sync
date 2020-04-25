@@ -24,5 +24,6 @@ export interface UserInRoomI {
     users: [{
         username: string
         uuid: string
+        is_admin: boolean
     }]
 }

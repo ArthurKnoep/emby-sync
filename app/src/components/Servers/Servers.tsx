@@ -23,7 +23,7 @@ export function Servers() {
                     setIsLoading(false);
                 })
         }
-    }, [authenticator, socket]);
+    }, [connected, authenticator, socket]);
     if (!connected) {
         return <Redirect to="/" />
     }

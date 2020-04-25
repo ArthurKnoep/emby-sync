@@ -121,6 +121,10 @@ export class Socket {
         return this.roomName;
     }
 
+    setCurrentRoom(roomName: string | undefined) {
+        this.roomName = roomName;
+    }
+
     getSocket(): SocketIOClient.Socket {
         return this.socket;
     }

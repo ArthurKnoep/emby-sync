@@ -21,6 +21,7 @@ interface RoomI {
     name: string
     needPassword: boolean
     password: string
+    admin_user_id: string
 }
 
 interface PoolI {
@@ -31,6 +32,7 @@ interface PoolI {
 interface UserInRoom {
     username: string;
     uuid: string;
+    is_admin: boolean;
 }
 
 export class Pool {
@@ -103,7 +105,8 @@ export class Pool {
         const room: RoomI = {
             name: roomName,
             needPassword: false,
-            password: ""
+            password: "",
+            admin_user_id: user.socket.id
         };
         if (password && password !== '') {
             room.needPassword = true;
@@ -167,6 +170,10 @@ export class Pool {
             if (!user.currentRoom) {
                 return reject(new NotInARoomError());
             }
+            const room = this.getRoom(user.currentRoom);
+            if (!room) {
+                return reject(new RoomNotFoundError());
+            }
             const roomName = user.currentRoom;
             this.io.in(roomName).clients((err, users) => {
                 if (err) {
@@ -178,7 +185,8 @@ export class Pool {
                     if (user) {
                         usersProm.push({
                             username: user.username,
-                            uuid: user.uuid
+                            uuid: user.uuid,
+                            is_admin: user.socket.id === room.admin_user_id
                         });
                     }
                 });

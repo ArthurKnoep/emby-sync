@@ -1,10 +1,12 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { List, notification } from 'antd';
+import { StarFilled } from '@ant-design/icons';
 import { SocketCtx } from '../../../../features/socket';
 
 interface User {
     username: string;
     uuid: string;
+    is_admin: boolean
 }
 
 export function UserList() {
@@ -12,13 +14,12 @@ export function UserList() {
     const { socket } = useContext(SocketCtx);
 
     const handleRoomUpdate = useCallback(msg => {
-        console.log(msg);
         if (msg.type === 'join') {
-            setUserList([...userList, {username: msg.data.username, uuid: msg.data.uuid}])
+            setUserList([...userList, {username: msg.data.username, uuid: msg.data.uuid, is_admin: false}])
         } else if (msg.type === 'leave') {
             setUserList(userList.filter(elem => elem.uuid !== msg.data.uuid))
         }
-    }, [userList, setUserList]);
+    }, [setUserList, userList]);
 
     const createNotification = (msg: string) => {
         notification.error({
@@ -28,6 +29,13 @@ export function UserList() {
     };
 
     useEffect(() => {
+        socket.getSocket().on('room:update', handleRoomUpdate);
+        return () => {
+            socket.getSocket().off('room:update', handleRoomUpdate);
+        }
+    }, [socket, handleRoomUpdate]);
+
+    useEffect(() => {
         socket.listUserInRoom()
             .then(resp => {
                 let u: User[] = [];
@@ -35,16 +43,14 @@ export function UserList() {
                     u.push({
                         username: elem.username,
                         uuid: elem.uuid,
+                        is_admin: elem.is_admin,
                     })
                 });
                 setUserList(u);
             })
             .catch(err => createNotification(err.message || "Unknown error"));
-        socket.getSocket().on('room:update', handleRoomUpdate);
-        return () => {
-            socket.getSocket().off('room:update', handleRoomUpdate);
-        }
-    }, [socket, userList, setUserList, handleRoomUpdate]);
+    }, [socket, setUserList]);
+
     return (
         <List
             itemLayout="horizontal"
@@ -56,6 +62,15 @@ export function UserList() {
             renderItem={item => (
                 <List.Item>
                     {item.username}
+                    {
+                        (item.is_admin)
+                        && (
+                            <>
+                                &nbsp;
+                                <StarFilled />
+                            </>
+                        )
+                    }
                 </List.Item>
             )}
         />

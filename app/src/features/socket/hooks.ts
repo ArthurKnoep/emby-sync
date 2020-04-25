@@ -16,6 +16,7 @@ export function useRoomInfo(): RoomI {
 
     const handleConnect = useCallback((msg) => {
         if (msg.status) {
+            socket.setCurrentRoom(msg.room_name);
             setRoomInfo({
                 connected: true,
                 info: {
@@ -23,11 +24,12 @@ export function useRoomInfo(): RoomI {
                 }
             });
         }
-    }, [setRoomInfo]);
+    }, [setRoomInfo, socket]);
 
     const handleDisconnect = useCallback(() => {
+        socket.setCurrentRoom(undefined);
         setRoomInfo({connected: false});
-    }, [setRoomInfo]);
+    }, [setRoomInfo, socket]);
 
     useEffect(() => {
         socket.getSocket().on('room:create', handleConnect);

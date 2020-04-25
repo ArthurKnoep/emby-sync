@@ -1,6 +1,5 @@
-import React, { ReactNode, useState, useContext, useEffect } from "react";
+import React, { ReactNode, useState } from "react";
 import { Row, Col, Card } from 'antd';
-import { SocketCtx } from '../../features/socket';
 import { Steps } from "../Steps";
 import styles from './Rooms.module.scss';
 import { CreateRoom } from "./CreateRoom";

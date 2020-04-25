@@ -1,10 +1,11 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Layout as LayoutAnt, Menu, Row, Col } from 'antd';
+import { Layout as LayoutAnt, Menu, notification } from 'antd';
 import styles from './Layout.module.scss';
 import { Latency } from './Latency';
 import { useRoomInfo } from '../../features/socket/hooks';
 import { RoomBox } from './RoomBox';
+import { SocketCtx } from '../../features/socket';
 
 const { Header, Content, Footer } = LayoutAnt;
 
@@ -14,7 +15,16 @@ interface Props {
 }
 
 export function Layout({ children, isAuthenticated }: Props) {
-    const { connected: roomConnected, info } = useRoomInfo();
+    const { connected: roomConnected } = useRoomInfo();
+    const { socket } = useContext(SocketCtx);
+    const leaveRoom = () => {
+        socket.leaveRoom()
+            .catch(err => notification.error({
+                message: 'Could not leave room',
+                description: err.message || 'Unknown error'
+            }));
+    };
+
     return (
         <LayoutAnt className={styles.layout}>
             <Header>
@@ -24,6 +34,10 @@ export function Layout({ children, isAuthenticated }: Props) {
                             ? (<Menu.Item style={{float: 'right'}}><Link to="/logout">Log Out</Link></Menu.Item>)
                             : (<Menu.Item style={{float: 'right'}}><Link to="/">Login</Link></Menu.Item>)
                     }
+                    {
+                        (roomConnected)
+                        && <Menu.Item onClick={leaveRoom} style={{float: 'right'}}>Leave room</Menu.Item>
+                        }
                 </Menu>
             </Header>
             <Content className={styles.content}>
