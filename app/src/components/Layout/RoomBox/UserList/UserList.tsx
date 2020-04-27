@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { List, notification } from 'antd';
 import { StarFilled } from '@ant-design/icons';
 import { SocketCtx } from '../../../../features/socket';
+import styles from './UserList.module.scss';
 
 interface User {
     username: string;
@@ -53,6 +54,7 @@ export function UserList() {
 
     return (
         <List
+            className={styles.list}
             itemLayout="horizontal"
             dataSource={userList}
             bordered

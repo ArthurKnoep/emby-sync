@@ -1,11 +1,13 @@
 .chatBox {
 	background-color: #1f1f1f;
-	height: 100%;
+	height: calc(100% - 64px);
 	width: 20.8333%;
 	position: fixed;
 	right: 0;
 	top: 64px;
 	transition: right 0.3s ease-in-out;
+	display: flex;
+	flex-direction: column;
 
 	&.hide{
 		right: -20.8333%;

@@ -27,3 +27,10 @@ export interface UserInRoomI {
         is_admin: boolean
     }]
 }
+
+export interface Message {
+    uuid: string;
+    date: Date,
+    username: string;
+    message: string;
+}

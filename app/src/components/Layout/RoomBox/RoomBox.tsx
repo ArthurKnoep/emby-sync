@@ -4,6 +4,7 @@ import { Typography } from 'antd';
 import styles from './RoomBox.module.scss';
 import { useRoomInfo } from '../../../features/socket/hooks';
 import { UserList } from './UserList';
+import { Chat } from './Chat';
 
 export function RoomBox() {
     const {connected, info} = useRoomInfo();
@@ -18,7 +19,12 @@ export function RoomBox() {
             </div>
             {
                 (connected)
-                && <UserList />
+                && (
+                    <>
+                        <UserList />
+                        <Chat />
+                    </>
+                )
             }
         </div>
     );

@@ -23,6 +23,7 @@ export class Handler {
             socket.on('room:join', this.handleJoinRoom(socket));
             socket.on('room:leave', this.handleLeaveRoom(socket));
             socket.on('room:list', this.handleListUser(socket));
+            socket.on('room:chat', this.handleChat(socket))
 
             socket.on('disconnect', () => {
                 this.pool.delUser(socket.id);
@@ -94,6 +95,20 @@ export class Handler {
             this.pool.listRoom(socket.id)
                 .then(userList => socket.emit('room:list', {status:true, users: userList}))
                 .catch(err => socket.emit('room:list', errorToInterface(err)))
+        };
+    }
+
+    handleChat(socket: Socket) {
+        return msg => {
+            if (!msg.message || msg.message.length > 512) {
+                return socket.emit('room:chat', InvalidArgE)
+            }
+            try {
+                this.pool.sendMessage(socket.id, msg.message);
+            } catch (e) {
+                return socket.emit('room:chat', errorToInterface(e));
+            }
+            return socket.emit('room:chat', {status: true});
         };
     }
 }

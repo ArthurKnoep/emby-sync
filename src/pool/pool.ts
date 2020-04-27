@@ -193,6 +193,18 @@ export class Pool {
                 resolve(usersProm);
             })
         });
+    }
 
+    sendMessage(userId: string, message: string) {
+        const user = this.getUserAndThrow(userId);
+        if (!user.currentRoom) {
+            throw new NotInARoomError();
+        }
+        user.socket.broadcast.to(user.currentRoom).emit('room:message', {
+            uuid: user.uuid,
+            date: new Date(),
+            username: user.username,
+            message
+        });
     }
 }
