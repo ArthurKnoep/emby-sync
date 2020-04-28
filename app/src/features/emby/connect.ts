@@ -2,7 +2,7 @@ import axios from 'axios';
 import path from 'path';
 import { EventEmitter } from 'events';
 import { Device } from './device';
-import { APPLICATION_NAME, APPLICATION_VERSION } from './emby';
+import { APPLICATION_NAME, APPLICATION_VERSION, Emby } from './emby';
 import { ExchangeI, LoginInfoI, PingServerI, ServerI } from './interface';
 
 const EMBY_SYNC_LOGIN_INFO = 'emby_sync_login_info';
@@ -10,10 +10,12 @@ const EMBY_SYNC_LOGIN_INFO = 'emby_sync_login_info';
 export class Authenticator extends EventEmitter {
     private loginInfo: LoginInfoI | null;
     private device: Device;
+    private emby: Emby | null;
 
     constructor() {
         super();
         this.loginInfo = null;
+        this.emby = null;
         this.device = new Device();
         const loginInfo = window.localStorage.getItem(EMBY_SYNC_LOGIN_INFO);
         if (loginInfo !== null) {
@@ -80,7 +82,17 @@ export class Authenticator extends EventEmitter {
                 'X-Emby-Device-Name': this.device.getDeviceName(),
                 'X-Emby-Token': server.AccessKey
             }
-        }).then(resp => resp.data);
+        }).then(resp => {
+            this.emby = new Emby(server.Url, resp.data.AccessToken, resp.data.LocalUserId, server.Name);
+            return resp.data;
+        });
+    }
+
+    getEmby(): Emby {
+        if (this.emby === null) {
+            throw new Error("Not authenticated");
+        }
+        return this.emby;
     }
 
     isLogin(): boolean {
@@ -94,9 +106,14 @@ export class Authenticator extends EventEmitter {
         return this.loginInfo.User.DisplayName;
     }
 
+    leaveServer() {
+        this.emby = null;
+    }
+
     logout() {
         window.localStorage.removeItem(EMBY_SYNC_LOGIN_INFO);
         this.loginInfo = null;
+        this.emby = null;
         this.emit('login:update', {status: false});
     }
 }

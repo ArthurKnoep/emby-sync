@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Redirect } from 'react-router-dom';
-import { Card, Col, Row, Spin, Typography } from "antd";
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { Redirect, useHistory } from 'react-router-dom';
+import { Card, Col, notification, Row, Spin, Typography } from "antd";
 import { Steps } from "../Steps";
 import { EmbyCtx } from '../../features/emby/embyCtx';
 import { ServerI } from '../../features/emby/interface';
@@ -10,10 +10,29 @@ import { useRoomInfo } from '../../features/socket/hooks';
 
 export function Servers() {
     const { authenticator } = useContext(EmbyCtx);
+    const history = useHistory();
     const { socket } = useContext(SocketCtx);
     const { connected } = useRoomInfo();
     const [servers, setServers] = useState<ServerI[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+
+    const handleServerConnect = useCallback((server: ServerI) => {
+        authenticator.exchangeToken(server)
+            .then(() => {
+                authenticator.getEmby().systemInfo()
+                    .then(() => {
+                        history.push(`/servers/${server.Id}`)
+                    })
+                    .catch(err => notification.error({
+                        message: 'Could not load server information',
+                        description: err.toString()
+                    }))
+            })
+            .catch(err => notification.error({
+                message: 'Could not connect to the server',
+                description: err.toString()
+            }));
+    }, [authenticator, history]);
 
     useEffect(() => {
         if (connected) {
@@ -24,6 +43,7 @@ export function Servers() {
                 })
         }
     }, [connected, authenticator, socket]);
+
     if (!connected) {
         return <Redirect to="/" />
     }
@@ -45,7 +65,7 @@ export function Servers() {
                         {
                             servers.map(server => (
                                 <Col key={server.Id} span={6}>
-                                    <Card className={styles.serverCard}>
+                                    <Card className={styles.serverCard} onClick={() => handleServerConnect(server)}>
                                         <Typography.Title className={styles.serverName} level={4} ellipsis>
                                             {server.Name}
                                         </Typography.Title>

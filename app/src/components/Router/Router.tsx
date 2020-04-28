@@ -8,6 +8,7 @@ import { Logout } from '../Logout';
 import { Rooms } from "../Rooms";
 import { Servers } from "../Servers";
 import { SocketCtx } from '../../features/socket';
+import { Server } from '../Server';
 
 enum AuthState {
     AUTH = 0b01,
@@ -43,6 +44,13 @@ const routes: RouteI[] = [
         auth: AuthState.AUTH,
         shouldRedirectAfterLogin: true,
         component: <Servers />
+    },
+    {
+        key: 'server',
+        path: '/servers/:serverId',
+        auth: AuthState.AUTH,
+        shouldRedirectAfterLogin: true,
+        component: <Server />
     },
     {
         key: 'login',

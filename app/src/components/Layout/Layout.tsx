@@ -6,6 +6,7 @@ import { Latency } from './Latency';
 import { useRoomInfo } from '../../features/socket/hooks';
 import { RoomBox } from './RoomBox';
 import { SocketCtx } from '../../features/socket';
+import { EmbyCtx } from '../../features/emby/embyCtx';
 
 const { Header, Content, Footer } = LayoutAnt;
 
@@ -15,9 +16,11 @@ interface Props {
 }
 
 export function Layout({ children, isAuthenticated }: Props) {
+    const { authenticator } = useContext(EmbyCtx);
     const { connected: roomConnected } = useRoomInfo();
     const { socket } = useContext(SocketCtx);
     const leaveRoom = () => {
+        authenticator.leaveServer();
         socket.leaveRoom()
             .catch(err => notification.error({
                 message: 'Could not leave room',

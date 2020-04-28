@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 const DEVICE_ID = 'emby_sync_device_id';
 
 export class Device {
-    private deviceId: string;
+    private readonly deviceId: string;
 
     constructor() {
         const deviceId = window.localStorage.getItem(DEVICE_ID);
