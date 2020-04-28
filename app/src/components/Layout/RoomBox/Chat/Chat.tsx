@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { Comment, Input } from 'antd';
+import { Comment, Input, notification } from 'antd';
 import moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import styles from './Chat.module.scss';
@@ -26,21 +26,29 @@ export function Chat() {
     const [messagePending, setMessagePending] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
 
-    console.log('re-render chat');
-
     const sendMessage = useCallback(message => {
         if (message.length === 0) {
             return;
         }
         setMessagePending("");
-        setMessages([...messages, {
-            type: MessageType.MESSAGE,
-            uuid: uuid(),
-            date: new Date(),
-            username: userInfo?.username || '',
-            data: message
-        }])
-    }, [messages, setMessages, userInfo, setMessagePending]);
+        socket.sendMessage(message)
+            .then(() => {
+                setMessages([...messages, {
+                    type: MessageType.MESSAGE,
+                    uuid: uuid(),
+                    date: new Date(),
+                    username: userInfo?.username || '',
+                    data: message
+                }])
+            })
+            .catch(err => {
+                setMessagePending(message);
+                notification.error({
+                    message: 'Could not send the message',
+                    description: err.message || 'Unknown error'
+                });
+            });
+    }, [messages, setMessages, userInfo, setMessagePending, socket]);
 
     const handleRoomUpdate = useCallback((msg) => {
         setMessages([...messages, {
@@ -51,13 +59,24 @@ export function Chat() {
         }]);
     }, [messages, setMessages]);
 
+    const handleMessageReceive = useCallback((msg) => {
+        setMessages([...messages, {
+            type: MessageType.MESSAGE,
+            username: msg.username,
+            uuid: uuid(),
+            date: new Date(msg.date),
+            data: msg.message,
+        }]);
+    }, [messages, setMessages]);
+
     useEffect(() => {
-        console.log('mount chat');
         socket.getSocket().on('room:update', handleRoomUpdate);
+        socket.getSocket().on('room:message', handleMessageReceive);
         return () => {
             socket.getSocket().off('room:update', handleRoomUpdate);
+            socket.getSocket().off('room:message', handleMessageReceive);
         }
-    }, [socket, handleRoomUpdate]);
+    }, [socket, handleRoomUpdate, handleMessageReceive]);
 
     return (
         <div className={styles.container}>

@@ -117,6 +117,19 @@ export class Socket {
         });
     }
 
+    async sendMessage(message: string): Promise<Response> {
+        await this.waitForConnection();
+        return new Promise((resolve, reject) => {
+            this.socket.once('room:chat', (resp: Response) => {
+                if (resp.status) {
+                    return resolve(resp);
+                }
+                return reject(resp);
+            });
+            this.socket.emit('room:chat', {message});
+        })
+    }
+
     getCurrentRoom(): string | undefined {
         return this.roomName;
     }
