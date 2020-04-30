@@ -1,0 +1,24 @@
+.librariesContainer {
+	.library {
+		margin: 0 10px;
+		cursor: pointer;
+
+		.libraryCard {
+			width: 200px;
+			height: 100px;
+			font-size: 50px;
+		}
+
+		.libraryName {
+			text-align: center;
+			margin: 7px 0;
+		}
+
+		&.disabled {
+			cursor: not-allowed;
+		}
+		&.disabled .libraryName, &.disabled .libraryCard {
+			color: #656565;
+		}
+	}
+}

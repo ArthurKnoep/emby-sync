@@ -1,17 +1,18 @@
 import axios, { AxiosInstance } from 'axios';
 import { Device } from './device';
-import { InfoI, LoadLibrariesI } from './interface';
+import { InfoI, LoadLibrariesI, LoadResumeItemI } from './interface';
+import * as path from 'path';
 
 export const APPLICATION_NAME = 'Emby Sync';
 export const APPLICATION_VERSION = '0.0.1';
 
 export class Emby {
     private requester: AxiosInstance;
-    private localUserId: string;
+    private readonly baseUrl: string;
+    private readonly localUserId: string;
     private readonly serverName: string;
 
     constructor(baseUrl: string, connectToken: string, localUserId: string, serverName: string) {
-        console.log('construct emby with', baseUrl, connectToken, localUserId);
         const device = new Device();
         this.requester = axios.create({
             baseURL: baseUrl,
@@ -23,6 +24,7 @@ export class Emby {
                 "X-Emby-Token": connectToken,
             }
         });
+        this.baseUrl = baseUrl;
         this.localUserId = localUserId;
         this.serverName = serverName;
     }
@@ -35,6 +37,30 @@ export class Emby {
     async getLibraries(): Promise<LoadLibrariesI> {
         const { data: libraries } = await this.requester.get(`/Users/${this.localUserId}/Views`);
         return libraries as LoadLibrariesI;
+    }
+
+    async getResumeItems(): Promise<LoadResumeItemI> {
+        const { data: resumeItems } = await this.requester.get(`/Users/${this.localUserId}/Items/Resume`, {
+            params: {
+                Limit: 10,
+                Recursive: true,
+                Fields: "PrimaryImageAspectRatio,BasicSyncInfo,ProductionYear",
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary,Backdrop,Thumb",
+                MediaTypes: "Video"
+            }
+        });
+        return resumeItems as LoadResumeItemI;
+    }
+
+    getItemPrimaryImageUrl(itemId: string): string {
+        const u = new URL(this.baseUrl);
+        const param = new URLSearchParams();
+        u.pathname = path.join(u.pathname, `/Items/${itemId}/Images/Backdrop`);
+        param.set('maxWidth', '347');
+        param.set('quality', '70');
+        u.search = param.toString();
+        return u.toString();
     }
 
     getServerName(): string {

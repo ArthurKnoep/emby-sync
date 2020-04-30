@@ -114,3 +114,33 @@ export interface LoadLibrariesI {
     Items: LibraryI[]
     TotalRecordCount: number,
 }
+
+export interface ResumeItemI {
+    BackdropImageTags: string[]
+    Id: string
+    ImageTags: {
+        Primary: string
+    }
+    IsFolder: boolean
+    MediaType: string
+    Name: string
+    PrimaryImageAspectRatio: number
+    ProductionYear: number
+    RunTimeTicks: number
+    ServerId: string
+    SupportsSync: boolean
+    Type: string
+    UserData: {
+        IsFavorite: boolean
+        LastPlayedDate: string
+        PlayCount: number
+        PlaybackPositionTicks: number
+        Played: boolean
+        PlayedPercentage: number
+    }
+}
+
+export interface LoadResumeItemI {
+    Items: ResumeItemI[]
+    TotalRecordCount: number
+}
