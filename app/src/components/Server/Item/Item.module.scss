@@ -1,6 +1,4 @@
 .imageContainer {
-	width: 300px;
-	padding-bottom: 56.25%;
 	position: relative;
 
 	.image {
@@ -19,6 +17,7 @@
 			bottom: 0;
 			height: 4px;
 			width: 100%;
+			background-color: #7b7b7ba6;
 
 			.progress {
 				background-color: #447ddc;
@@ -32,10 +31,16 @@
 	.primaryText {
 		text-align: center;
 		margin: 7px 0 0 0;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
 	}
 
 	.secondaryText {
 		text-align: center;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
 	}
 
 	& > *:last-child {

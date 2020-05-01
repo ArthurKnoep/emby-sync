@@ -5,6 +5,8 @@ import { BackgroundImageLoader } from '../../BackgroundImageLoader';
 import styles from './Item.module.scss';
 
 interface Props {
+    aspectRatio: number
+    width?: number
     className?: string
     imageSrc?: string
     primaryText: string
@@ -12,10 +14,11 @@ interface Props {
     progress?: number
 }
 
-export function Item({className, imageSrc, primaryText, secondaryText, progress}: Props) {
+export function Item({aspectRatio, width = 300, className, imageSrc, primaryText, secondaryText, progress}: Props) {
+    const heightPercentage = (1/aspectRatio) * 100;
     return (
         <div className={classNames(className)}>
-            <div className={styles.imageContainer}>
+            <div className={styles.imageContainer} style={{paddingBottom: `${heightPercentage}%`, width}}>
                 <div className={styles.image}>
                     {
                         (imageSrc)
@@ -31,7 +34,7 @@ export function Item({className, imageSrc, primaryText, secondaryText, progress}
                     }
                 </div>
             </div>
-            <div className={styles.subText}>
+            <div className={styles.subText} style={{width}}>
                 <Typography.Paragraph className={styles.primaryText}>{primaryText}</Typography.Paragraph>
                 {
                     (secondaryText)

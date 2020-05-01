@@ -6,6 +6,8 @@ import { useRoomInfo } from '../../features/socket/hooks';
 import { EmbyCtx } from '../../features/emby/embyCtx';
 import { Libraries } from './Libraries';
 import { Resume } from './Resume';
+import { NextUp } from './NextUp';
+import { LastMovies } from './LastMovies';
 
 export function Server() {
     const { authenticator } = useContext(EmbyCtx);
@@ -32,6 +34,8 @@ export function Server() {
             <Col span={18} offset={1}>
                 <Libraries />
                 <Resume />
+                <NextUp />
+                <LastMovies />
             </Col>
         </Row>
     );

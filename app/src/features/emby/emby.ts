@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { Device } from './device';
-import { InfoI, LoadLibrariesI, LoadResumeItemI } from './interface';
+import { InfoI, LoadLibrariesI, LoadItemsI, ItemI } from './interface';
 import * as path from 'path';
 
 export const APPLICATION_NAME = 'Emby Sync';
@@ -11,6 +11,7 @@ export class Emby {
     private readonly baseUrl: string;
     private readonly localUserId: string;
     private readonly serverName: string;
+    private libraries: LoadLibrariesI | null;
 
     constructor(baseUrl: string, connectToken: string, localUserId: string, serverName: string) {
         const device = new Device();
@@ -27,6 +28,7 @@ export class Emby {
         this.baseUrl = baseUrl;
         this.localUserId = localUserId;
         this.serverName = serverName;
+        this.libraries = null;
     }
 
     async systemInfo(): Promise<InfoI> {
@@ -35,11 +37,16 @@ export class Emby {
     }
 
     async getLibraries(): Promise<LoadLibrariesI> {
+        if (this.libraries) {
+            console.log('libraries from cache');
+            return this.libraries;
+        }
         const { data: libraries } = await this.requester.get(`/Users/${this.localUserId}/Views`);
+        this.libraries = libraries;
         return libraries as LoadLibrariesI;
     }
 
-    async getResumeItems(): Promise<LoadResumeItemI> {
+    async getResumeItems(): Promise<LoadItemsI> {
         const { data: resumeItems } = await this.requester.get(`/Users/${this.localUserId}/Items/Resume`, {
             params: {
                 Limit: 10,
@@ -50,17 +57,59 @@ export class Emby {
                 MediaTypes: "Video"
             }
         });
-        return resumeItems as LoadResumeItemI;
+        return resumeItems as LoadItemsI;
     }
 
-    getItemPrimaryImageUrl(itemId: string, type: 'Backdrop' | 'Thumb'): string {
+    getItemPrimaryImageUrl(item: ItemI, mode: 'Poster' | 'Banner'): string {
+        let id, type;
+        if (mode === 'Banner') {
+            if (item.ParentThumbItemId) {
+                id = item.ParentThumbItemId;
+                type = "Thumb";
+            } else if (item.ParentBackdropItemId) {
+                id = item.ParentBackdropItemId;
+                type = "Backdrop";
+            } else {
+                id = item.Id;
+                type = "Backdrop";
+            }
+        } else {
+            id = item.Id;
+            type = "Primary";
+        }
         const u = new URL(this.baseUrl);
         const param = new URLSearchParams();
-        u.pathname = path.join(u.pathname, `/Items/${itemId}/Images/${type}`);
+        u.pathname = path.join(u.pathname, `/Items/${id}/Images/${type}`);
         param.set('maxWidth', '347');
         param.set('quality', '70');
         u.search = param.toString();
         return u.toString();
+    }
+
+    async getNextUp(): Promise<LoadItemsI> {
+        const { data: nextUpItems } = await this.requester.get('/Shows/NextUp', {
+            params: {
+                Limit: 20,
+                Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,BasicSyncInfo",
+                UserId: this.localUserId,
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            }
+        });
+        return nextUpItems as LoadItemsI;
+    }
+
+    async getLatestItemFromLibrary(libraryId: string): Promise<ItemI[]> {
+        const { data: latest } = await this.requester.get(`/Users/${this.localUserId}/Items/Latest`, {
+            params: {
+                Limit: 20,
+                Fields: "PrimaryImageAspectRatio,BasicSyncInfo,ProductionYear,Status,EndDate",
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary,Backdrop,Thumb",
+                ParentId: libraryId
+            }
+        });
+        return latest as ItemI[];
     }
 
     getServerName(): string {

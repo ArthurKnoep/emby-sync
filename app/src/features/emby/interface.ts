@@ -115,7 +115,7 @@ export interface LoadLibrariesI {
     TotalRecordCount: number,
 }
 
-export interface ResumeItemI {
+export interface ItemI {
     BackdropImageTags: string[]
     Id: string
     ImageTags: {
@@ -147,11 +147,11 @@ export interface ResumeItemI {
         PlayCount: number
         PlaybackPositionTicks: number
         Played: boolean
-        PlayedPercentage: number
+        PlayedPercentage?: number
     }
 }
 
-export interface LoadResumeItemI {
-    Items: ResumeItemI[]
+export interface LoadItemsI {
+    Items: ItemI[]
     TotalRecordCount: number
 }
