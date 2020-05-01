@@ -1,9 +1,9 @@
 import React, { ReactNode, useState } from "react";
 import { Row, Col, Card } from 'antd';
 import { Steps } from "../Steps";
-import styles from './Rooms.module.scss';
 import { CreateRoom } from "./CreateRoom";
 import { JoinRoom } from "./JoinRoom";
+import styles from './Rooms.module.scss';
 
 interface Tab {
     key: string;

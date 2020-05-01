@@ -17,7 +17,6 @@
     "moment": "^2.24.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-image-and-background-image-fade": "^1.0.4",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
     "socket.io-client": "^2.3.0",

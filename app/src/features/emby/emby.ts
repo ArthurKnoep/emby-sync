@@ -53,10 +53,10 @@ export class Emby {
         return resumeItems as LoadResumeItemI;
     }
 
-    getItemPrimaryImageUrl(itemId: string): string {
+    getItemPrimaryImageUrl(itemId: string, type: 'Backdrop' | 'Thumb'): string {
         const u = new URL(this.baseUrl);
         const param = new URLSearchParams();
-        u.pathname = path.join(u.pathname, `/Items/${itemId}/Images/Backdrop`);
+        u.pathname = path.join(u.pathname, `/Items/${itemId}/Images/${type}`);
         param.set('maxWidth', '347');
         param.set('quality', '70');
         u.search = param.toString();

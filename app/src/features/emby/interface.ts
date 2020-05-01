@@ -121,15 +121,26 @@ export interface ResumeItemI {
     ImageTags: {
         Primary: string
     }
+    IndexNumber?: number
     IsFolder: boolean
     MediaType: string
     Name: string
+    ParentBackdropImageTags?: string[]
+    ParentBackdropItemId?: string
+    ParentIndexNumber?: number
+    ParentThumbImageTag?: string
+    ParentThumbItemId?: string
     PrimaryImageAspectRatio: number
     ProductionYear: number
     RunTimeTicks: number
+    SeasonId?: string
+    SeasonName?: string
+    SeriesId?: string
+    SeriesName?: string
+    SeriesPrimaryImageTag?: string
     ServerId: string
     SupportsSync: boolean
-    Type: string
+    Type: 'Movie' | 'Episode'
     UserData: {
         IsFavorite: boolean
         LastPlayedDate: string
