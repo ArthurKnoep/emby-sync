@@ -7,7 +7,7 @@ import { EmbyCtx } from '../../features/emby/embyCtx';
 import { Libraries } from './Libraries';
 import { Resume } from './Resume';
 import { NextUp } from './NextUp';
-import { LastMovies } from './LastMovies';
+import { LastItems } from './LastItems';
 
 export function Server() {
     const { authenticator } = useContext(EmbyCtx);
@@ -35,7 +35,8 @@ export function Server() {
                 <Libraries />
                 <Resume />
                 <NextUp />
-                <LastMovies />
+                <LastItems title="Last movies" collectionType="movies" />
+                <LastItems title="Last Series" collectionType="tvshows" />
             </Col>
         </Row>
     );

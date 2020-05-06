@@ -12,6 +12,22 @@
 		border-radius: 4px;
 		background-color: #141414;
 
+		.badgeContainer {
+			position: absolute;
+			top: 5px;
+			right: 5px;
+
+			.hasBeenPlayed {
+				color: #447ddc;
+				font-size: 1.5em;
+			}
+
+			.badge sup {
+				background-color: #447ddc;
+				box-shadow: unset;
+			}
+		}
+
 		.progressContainer {
 			position: absolute;
 			bottom: 0;

@@ -140,7 +140,7 @@ export interface ItemI {
     SeriesPrimaryImageTag?: string
     ServerId: string
     SupportsSync: boolean
-    Type: 'Movie' | 'Episode'
+    Type: 'Movie' | 'Episode' | 'Series'
     UserData: {
         IsFavorite: boolean
         LastPlayedDate: string
@@ -148,6 +148,7 @@ export interface ItemI {
         PlaybackPositionTicks: number
         Played: boolean
         PlayedPercentage?: number
+        UnplayedItemCount?: number
     }
 }
 
