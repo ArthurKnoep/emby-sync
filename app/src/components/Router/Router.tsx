@@ -9,6 +9,7 @@ import { Rooms } from "../Rooms";
 import { Servers } from "../Servers";
 import { SocketCtx } from '../../features/socket';
 import { Server } from '../Server';
+import { Player } from '../Player';
 
 enum AuthState {
     AUTH = 0b01,
@@ -51,6 +52,13 @@ const routes: RouteI[] = [
         auth: AuthState.AUTH,
         shouldRedirectAfterLogin: true,
         component: <Server />
+    },
+    {
+        key: 'play',
+        path: '/play',
+        auth: AuthState.AUTH,
+        shouldRedirectAfterLogin: true,
+        component: <Player />
     },
     {
         key: 'login',

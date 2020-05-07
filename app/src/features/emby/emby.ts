@@ -11,9 +11,10 @@ export class Emby {
     private readonly baseUrl: string;
     private readonly localUserId: string;
     private readonly serverName: string;
+    private readonly serverId: string;
     private libraries: LoadLibrariesI | null;
 
-    constructor(baseUrl: string, connectToken: string, localUserId: string, serverName: string) {
+    constructor(baseUrl: string, connectToken: string, localUserId: string, serverName: string, serverId: string) {
         const device = new Device();
         this.requester = axios.create({
             baseURL: baseUrl,
@@ -28,6 +29,7 @@ export class Emby {
         this.baseUrl = baseUrl;
         this.localUserId = localUserId;
         this.serverName = serverName;
+        this.serverId = serverId;
         this.libraries = null;
     }
 
@@ -114,5 +116,9 @@ export class Emby {
 
     getServerName(): string {
         return this.serverName;
+    }
+
+    getServerId(): string {
+        return this.serverId;
     }
 }

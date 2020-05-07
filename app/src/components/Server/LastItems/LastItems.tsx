@@ -64,6 +64,7 @@ export function LastItems({ collectionType, title }: Props) {
                     : items.map(item => (
                         <Item
                             key={item.Id}
+                            itemId={item.Id}
                             className={classNames(globalStyles.flexScrollItem, styles.latestItem)}
                             width={160}
                             aspectRatio={0.66666666}

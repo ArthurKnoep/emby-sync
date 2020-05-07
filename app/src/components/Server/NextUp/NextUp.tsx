@@ -51,6 +51,7 @@ export function NextUp() {
                         : nextUp.map(item => (
                             <Item
                                 key={item.Id}
+                                itemId={item.Id}
                                 aspectRatio={1.7777777777777777}
                                 className={classNames(styles.nextUpItem, globalStyles.flexScrollItem)}
                                 imageSrc={emby.getItemPrimaryImageUrl(item, 'Banner')}

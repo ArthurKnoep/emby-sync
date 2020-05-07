@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 import { Col, Row } from 'antd';
-import { Redirect } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 import { Steps } from '../Steps';
 import { useRoomInfo } from '../../features/socket/hooks';
 import { EmbyCtx } from '../../features/emby/embyCtx';
@@ -10,8 +10,9 @@ import { NextUp } from './NextUp';
 import { LastItems } from './LastItems';
 
 export function Server() {
-    const { authenticator } = useContext(EmbyCtx);
+    const { authenticator, playerContext } = useContext(EmbyCtx);
     const { connected } = useRoomInfo();
+    const history = useHistory();
     const emby = useMemo(() => {
         try {
             return authenticator.getEmby();
@@ -19,6 +20,14 @@ export function Server() {
             return null;
         }
     }, [authenticator]);
+
+    const handleItemClick = (itemId: string) => {
+        playerContext.setContext({
+            serverId: authenticator.getEmby().getServerId(),
+            itemId
+        });
+        history.push(`/play`)
+    };
 
     if (!connected) {
         return <Redirect to="/" />
@@ -33,7 +42,7 @@ export function Server() {
             </Col>
             <Col span={18} offset={1}>
                 <Libraries />
-                <Resume />
+                <Resume onItemClick={handleItemClick} />
                 <NextUp />
                 <LastItems title="Last movies" collectionType="movies" />
                 <LastItems title="Last Series" collectionType="tvshows" />

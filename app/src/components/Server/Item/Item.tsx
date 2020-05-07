@@ -1,11 +1,12 @@
 import React from 'react';
 import { Badge, Typography } from 'antd';
-import { CheckCircleFilled } from '@ant-design/icons';
+import { CheckCircleFilled, RightCircleFilled } from '@ant-design/icons';
 import classNames from 'classnames';
 import { BackgroundImageLoader } from '../../BackgroundImageLoader';
 import styles from './Item.module.scss';
 
 interface Props {
+    itemId: string
     aspectRatio: number
     width?: number
     className?: string
@@ -15,10 +16,12 @@ interface Props {
     progress?: number
     hasBeenPlayed?: boolean
     childrenElementCount?: number
+    onPlayClick?: (itemId: string) => void
 }
 
 export function Item(
     {
+        itemId,
         aspectRatio,
         width = 300,
         className,
@@ -27,9 +30,17 @@ export function Item(
         secondaryText,
         progress,
         hasBeenPlayed,
-        childrenElementCount
+        childrenElementCount,
+        onPlayClick
     }: Props) {
     const heightPercentage = (1 / aspectRatio) * 100;
+
+    const handleClick = () => {
+        if (onPlayClick) {
+            onPlayClick(itemId);
+        }
+    }
+
     return (
         <div className={classNames(className)}>
             <div className={styles.imageContainer} style={{paddingBottom: `${heightPercentage}%`, width}}>
@@ -46,6 +57,10 @@ export function Item(
                             </div>
                         )
                     }
+                    <div className={styles.background} />
+                    <div className={styles.playBtnContainer} onClick={handleClick}>
+                        <RightCircleFilled />
+                    </div>
                     {
                         (hasBeenPlayed)
                         && (

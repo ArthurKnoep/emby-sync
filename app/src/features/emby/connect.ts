@@ -83,7 +83,7 @@ export class Authenticator extends EventEmitter {
                 'X-Emby-Token': server.AccessKey
             }
         }).then(resp => {
-            this.emby = new Emby(server.Url, resp.data.AccessToken, resp.data.LocalUserId, server.Name);
+            this.emby = new Emby(server.Url, resp.data.AccessToken, resp.data.LocalUserId, server.Name, server.Id);
             return resp.data;
         });
     }

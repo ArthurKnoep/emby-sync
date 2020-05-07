@@ -8,7 +8,11 @@ import { Item } from '../Item';
 import globalStyles from '../Server.module.scss';
 import styles from './Resume.module.scss';
 
-export function Resume() {
+interface Props {
+    onItemClick?: (itemId: string) => void
+}
+
+export function Resume({ onItemClick }: Props) {
     const {authenticator} = useContext(EmbyCtx);
     const [loadingResumeItems, setLoadingResumeItems] = useState<boolean>(true);
     const [resumeItems, setResumeItems] = useState<ItemI[]>([]);
@@ -36,6 +40,12 @@ export function Resume() {
         }
     }, [emby]);
 
+    const handleItemClick = (itemId: string) => {
+        if (onItemClick) {
+            onItemClick(itemId);
+        }
+    }
+
     if (!emby) {
         return <Redirect to="/servers" />
     }
@@ -53,12 +63,14 @@ export function Resume() {
                                 return (
                                     <Item
                                         key={resume.Id}
+                                        itemId={resume.Id}
                                         aspectRatio={1.7777777777777777}
                                         className={classNames(styles.resumeItem, globalStyles.flexScrollItem)}
                                         imageSrc={emby.getItemPrimaryImageUrl(resume, 'Banner')}
                                         primaryText={resume.Name}
                                         secondaryText={resume.ProductionYear.toString()}
                                         progress={resume.UserData.PlayedPercentage}
+                                        onPlayClick={handleItemClick}
                                     />
                                 );
                             }
@@ -66,12 +78,14 @@ export function Resume() {
                                 return (
                                     <Item
                                         key={resume.Id}
+                                        itemId={resume.Id}
                                         aspectRatio={1.7777777777777777}
                                         className={classNames(styles.resumeItem, globalStyles.flexScrollItem)}
                                         imageSrc={emby.getItemPrimaryImageUrl(resume, 'Banner')}
                                         primaryText={resume.SeriesName || ''}
                                         secondaryText={`S${resume.ParentIndexNumber}:E${resume.IndexNumber} - ${resume.Name}`}
                                         progress={resume.UserData.PlayedPercentage}
+                                        onPlayClick={handleItemClick}
                                     />
                                 )
                             }
