@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { Device } from './device';
-import { InfoI, LoadLibrariesI, LoadItemsI, ItemI } from './interface';
+import { InfoI, LoadLibrariesI, LoadItemsI, ItemI, FullItemI, PlaybackInfoI } from './interface';
 import * as path from 'path';
 
 export const APPLICATION_NAME = 'Emby Sync';
@@ -8,6 +8,7 @@ export const APPLICATION_VERSION = '0.0.1';
 
 export class Emby {
     private requester: AxiosInstance;
+    private readonly device: Device;
     private readonly baseUrl: string;
     private readonly localUserId: string;
     private readonly serverName: string;
@@ -15,14 +16,14 @@ export class Emby {
     private libraries: LoadLibrariesI | null;
 
     constructor(baseUrl: string, connectToken: string, localUserId: string, serverName: string, serverId: string) {
-        const device = new Device();
+        this.device = new Device();
         this.requester = axios.create({
             baseURL: baseUrl,
             headers: {
                 "X-Emby-Client": APPLICATION_NAME,
                 "X-Emby-Client-Version": APPLICATION_VERSION,
-                "X-Emby-Device-Id": device.getDeviceId(),
-                "X-Emby-Device-Name": device.getDeviceName(),
+                "X-Emby-Device-Id": this.device.getDeviceId(),
+                "X-Emby-Device-Name": this.device.getDeviceName(),
                 "X-Emby-Token": connectToken,
             }
         });
@@ -112,6 +113,27 @@ export class Emby {
             }
         });
         return latest as ItemI[];
+    }
+
+    async playbackInfo(itemId: string, audioStreamIndex: number, subtitleStreamIndex: number, mediaSourceId: string): Promise<PlaybackInfoI> {
+        const { data: playbackInfo } = await this.requester.post(`/Items/${itemId}/PlaybackInfo`, this.device.getDeviceProfile(), {
+            params: {
+                UserId: this.localUserId,
+                StartTimeTicks: 0,
+                IsPlayback: true,
+                AutoOpenLiveStream: true,
+                AudioStreamIndex: audioStreamIndex,
+                SubtitleStreamIndex: subtitleStreamIndex,
+                MediaSourceId: mediaSourceId,
+                MaxStreamingBitrate: 10000000
+            }
+        });
+        return playbackInfo as PlaybackInfoI;
+    }
+
+    async getItem(itemId: string): Promise<FullItemI> {
+        const { data: item } = await this.requester.get(`/Users/${this.localUserId}/Items/${itemId}`);
+        return item as FullItemI;
     }
 
     getServerName(): string {

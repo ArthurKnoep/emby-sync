@@ -26,7 +26,7 @@ export function Server() {
             serverId: authenticator.getEmby().getServerId(),
             itemId
         });
-        history.push(`/play`)
+        history.push(`/servers/${authenticator.getEmby().getServerId()}/items/${itemId}/play`);
     };
 
     if (!connected) {

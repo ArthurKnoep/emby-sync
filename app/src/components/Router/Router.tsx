@@ -55,7 +55,7 @@ const routes: RouteI[] = [
     },
     {
         key: 'play',
-        path: '/play',
+        path: '/servers/:serverId/items/:itemId/play',
         auth: AuthState.AUTH,
         shouldRedirectAfterLogin: true,
         component: <Player />
