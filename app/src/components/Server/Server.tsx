@@ -44,8 +44,8 @@ export function Server() {
                 <Libraries />
                 <Resume onItemClick={handleItemClick} />
                 <NextUp />
-                <LastItems title="Last movies" collectionType="movies" />
-                <LastItems title="Last Series" collectionType="tvshows" />
+                <LastItems title="Last movies" collectionType="movies" onItemStartPlay={handleItemClick} />
+                <LastItems title="Last Series" collectionType="tvshows" onItemStartPlay={handleItemClick} />
             </Col>
         </Row>
     );

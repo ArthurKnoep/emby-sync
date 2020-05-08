@@ -1,13 +1,14 @@
-interface Context {
+export interface Context {
     serverId: string
     itemId: string
+    audioStreamIndex?: number
+    subtitleStreamIndex?: number
 }
 
 export class PlayerContext {
     private ctx?: Context;
 
     setContext(ctx: Context) {
-        console.log(ctx);
         this.ctx = ctx;
     }
 

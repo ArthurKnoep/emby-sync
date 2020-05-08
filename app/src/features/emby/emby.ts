@@ -89,6 +89,10 @@ export class Emby {
         return u.toString();
     }
 
+    appendServerBaseUrl(p: string): string {
+        return this.baseUrl + p;
+    }
+
     async getNextUp(): Promise<LoadItemsI> {
         const { data: nextUpItems } = await this.requester.get('/Shows/NextUp', {
             params: {

@@ -383,7 +383,7 @@ export interface ProfileI {
 }
 
 export interface PlaybackInfoI {
-    MediaSources?: {
+    MediaSources: {
         Protocol: string;
         Id: string;
         Path: string;
@@ -444,6 +444,7 @@ export interface PlaybackInfoI {
         Bitrate: number;
         RequiredHttpHeaders: {};
         DirectStreamUrl: string;
+        TranscodingUrl: string;
         ReadAtNativeFramerate: boolean;
         DefaultAudioStreamIndex: number;
         DefaultSubtitleStreamIndex: number;

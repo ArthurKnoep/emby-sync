@@ -11,9 +11,10 @@ import styles from './LastItems.module.scss';
 interface Props {
     collectionType: 'movies' | 'tvshows'
     title: string
+    onItemStartPlay?: (itemId: string) => void
 }
 
-export function LastItems({ collectionType, title }: Props) {
+export function LastItems({ collectionType, title, onItemStartPlay }: Props) {
     const {authenticator} = useContext(EmbyCtx);
     const emby = useMemo(() => {
         try {
@@ -24,6 +25,7 @@ export function LastItems({ collectionType, title }: Props) {
     }, [authenticator]);
     const [isLoading, setLoading] = useState<boolean>(true);
     const [items, setItems] = useState<ItemI[]>([]);
+
     useEffect(() => {
         if (emby) {
             emby.getLibraries()
@@ -48,6 +50,12 @@ export function LastItems({ collectionType, title }: Props) {
                 }))
         }
     }, [collectionType, emby, setLoading, setItems]);
+
+    const handlePlayClick = (itemId: string) => {
+        if (onItemStartPlay) {
+            onItemStartPlay(itemId);
+        }
+    }
 
     if (!emby) {
         return <Redirect to="/servers" />
@@ -74,6 +82,7 @@ export function LastItems({ collectionType, title }: Props) {
                             progress={item.UserData.PlayedPercentage}
                             hasBeenPlayed={(collectionType === 'movies') ? item.UserData.Played : undefined}
                             childrenElementCount={(collectionType === 'tvshows') ? item.UserData.UnplayedItemCount : undefined}
+                            onPlayClick={handlePlayClick}
                         />
                     ))
                 }
