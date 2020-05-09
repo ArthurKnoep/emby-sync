@@ -1,5 +1,6 @@
 import HLS from 'hls.js';
 import { Emby } from './emby';
+import { Options } from '../options';
 import { Context } from './playerContext';
 
 enum PlayMode {
@@ -8,15 +9,17 @@ enum PlayMode {
 }
 
 export class Player {
-    private hls: HLS;
+    private readonly hls: HLS;
+    private readonly options: Options;
     private mode?: PlayMode;
     private emby: Emby;
     private videoElement?: HTMLVideoElement;
     private temporaryCallback?: () => void;
 
-    constructor(emby: Emby) {
+    constructor(emby: Emby, options: Options) {
         this.hls = new HLS();
         this.emby = emby;
+        this.options = options;
     }
 
     attachMedia(videoElement: HTMLVideoElement) {

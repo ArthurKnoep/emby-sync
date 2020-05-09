@@ -6,9 +6,11 @@ import { EmbyCtx } from '../../features/emby/embyCtx';
 import { Player as EmbyPlayer } from '../../features/emby/player';
 import { useRoomInfo } from '../../features/socket/hooks';
 import styles from './Player.module.scss';
+import { OptionsCtx } from '../../features/options';
 
 export function Player() {
     const { authenticator, playerContext } = useContext(EmbyCtx);
+    const { options } = useContext(OptionsCtx);
     const { connected } = useRoomInfo();
     const emby = useMemo(() => {
         try {
@@ -19,9 +21,9 @@ export function Player() {
     }, [authenticator]);
     const player = useMemo(() => {
         if (emby) {
-            return new EmbyPlayer(emby);
+            return new EmbyPlayer(emby, options);
         }
-    }, [emby]);
+    }, [emby, options]);
     const videoRef = useRef(null);
 
 

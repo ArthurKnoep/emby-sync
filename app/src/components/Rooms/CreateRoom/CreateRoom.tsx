@@ -10,7 +10,7 @@ export function CreateRoom() {
     const { socket } = useContext(SocketCtx);
     const history = useHistory();
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [usePassword, setUsePassword] = useState<boolean>(true);
+    const [usePassword, setUsePassword] = useState<boolean>(false);
 
     const createNotification = (msg: string) => {
         notification.error({

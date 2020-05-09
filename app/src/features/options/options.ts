@@ -1,4 +1,6 @@
-import { alpha2ToAlpha3B } from '@cospired/i18n-iso-languages';
+import { alpha2ToAlpha3B, registerLocale } from '@cospired/i18n-iso-languages';
+
+registerLocale(require("@cospired/i18n-iso-languages/langs/en.json"));
 
 enum SubType {
     None,
