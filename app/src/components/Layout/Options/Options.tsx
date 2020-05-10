@@ -40,7 +40,7 @@ function prettyPrintBitrate(bitrate: number):string {
 
 export function Options({ visible = true, onClose }: Props) {
     const countryList = useMemo(() => getNames("en"), []);
-    const formElem = useRef(null);
+    const [form] = Form.useForm();
     const { options } = useContext(OptionsCtx);
     const { authenticator } = useContext(EmbyCtx);
     const [subType, setSubType] = useState<SubType>(options.getOpt().defaultSubType);
@@ -61,13 +61,9 @@ export function Options({ visible = true, onClose }: Props) {
         (async () => {
             const bitrate = await emby.bitrateTest();
             setAutoDetectBitrate(false);
-            if (formElem.current) {
-                // @ts-ignore
-                const values = formElem.current.getFieldsValue();
-                values.maxBitrate = Math.round(bitrate * 0.9);
-                // @ts-ignore
-                formElem.current.setFieldsValue(values);
-            }
+            const values = form.getFieldsValue();
+            values.maxBitrate = Math.round(bitrate * 0.9);
+            form.setFieldsValue(values);
         })();
     };
 
@@ -81,17 +77,14 @@ export function Options({ visible = true, onClose }: Props) {
                 }
             }}
             onOk={() => {
-                if (formElem.current) {
-                    // @ts-ignore
-                    options.setOpt(formElem.current.getFieldsValue());
-                }
+                options.setOpt(form.getFieldsValue() as any);
                 if (onClose) {
                     onClose();
                 }
             }}
         >
             <Form
-                ref={formElem}
+                form={form}
                 initialValues={options.getOpt()}
             >
                 <Form.Item
