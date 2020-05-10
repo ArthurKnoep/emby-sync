@@ -1,7 +1,9 @@
 import React, { useContext, useMemo, useRef, useState } from 'react';
-import { Form, Modal, Radio, Select, Slider } from 'antd';
+import { Form, Modal, Radio, Select, Slider, Button, notification } from 'antd';
 import { alpha2ToAlpha3B, getNames } from '@cospired/i18n-iso-languages';
 import { OptionsCtx, SubType } from '../../../features/options';
+import { EmbyCtx } from '../../../features/emby/embyCtx';
+import { Emby } from '../../../features/emby/emby';
 
 interface Props {
     visible?: boolean
@@ -40,7 +42,34 @@ export function Options({ visible = true, onClose }: Props) {
     const countryList = useMemo(() => getNames("en"), []);
     const formElem = useRef(null);
     const { options } = useContext(OptionsCtx);
+    const { authenticator } = useContext(EmbyCtx);
     const [subType, setSubType] = useState<SubType>(options.getOpt().defaultSubType);
+    const [isAutoDetectingBitrate, setAutoDetectBitrate] = useState<boolean>(false);
+
+    const autoDetectBitrate = () => {
+        setAutoDetectBitrate(true);
+        let emby: Emby;
+        try {
+            emby = authenticator.getEmby();
+        } catch (e) {
+            setAutoDetectBitrate(false);
+            return notification.error({
+                message: 'Could not auto detect bitrate',
+                description: 'You are not connected on a Emby server (Join a room and a server before)'
+            });
+        }
+        (async () => {
+            const bitrate = await emby.bitrateTest();
+            setAutoDetectBitrate(false);
+            if (formElem.current) {
+                // @ts-ignore
+                const values = formElem.current.getFieldsValue();
+                values.maxBitrate = Math.round(bitrate * 0.9);
+                // @ts-ignore
+                formElem.current.setFieldsValue(values);
+            }
+        })();
+    };
 
     return (
         <Modal
@@ -109,6 +138,9 @@ export function Options({ visible = true, onClose }: Props) {
                         tipFormatter={value => (`${getQuality(value)} - ${prettyPrintBitrate(value)}`)}
                     />
                 </Form.Item>
+                <Button onClick={autoDetectBitrate} loading={isAutoDetectingBitrate}>
+                    Auto detect bitrate
+                </Button>
             </Form>
         </Modal>
     );

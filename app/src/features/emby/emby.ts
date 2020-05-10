@@ -140,6 +140,33 @@ export class Emby {
         return item as FullItemI;
     }
 
+
+    private async queryBitrateTest(size: number): Promise<number> {
+        const startDate = new Date().getTime();
+        await this.requester.get('/Playback/BitrateTest', {
+            params: {
+                Size: size
+            }
+        });
+        return new Date().getTime() - startDate;
+    }
+
+    /**
+     * Auto detect the bitrate of the user with the server
+     * @return Bitrate in bit per second
+     */
+    async bitrateTest(): Promise<number> {
+        let timeTaken;
+        let size = 1000 * 1000;
+        do {
+            timeTaken = await this.queryBitrateTest(size);
+            if (timeTaken <= 4000) {
+                size += 10 * 1000 * 1000;
+            }
+        } while (timeTaken <= 4000);
+        return Math.round((size * 8) / (timeTaken / 1000));
+    }
+
     getServerName(): string {
         return this.serverName;
     }
