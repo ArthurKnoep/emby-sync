@@ -6,21 +6,24 @@ export function useRoomInfo(): RoomI {
     const { socket } = useContext(SocketCtx);
     const defaultValue: RoomI = {connected: false};
     const roomName = socket.getCurrentRoom();
-    if (roomName) {
+    const isMaster = socket.getIsMaster();
+    if (roomName && typeof isMaster === 'boolean') {
         defaultValue.connected = true;
         defaultValue.info = {
-            room_name: roomName
+            room_name: roomName,
+            is_master: isMaster
         };
     }
     const [room, setRoomInfo] = useState<RoomI>(defaultValue);
 
-    const handleConnect = useCallback((msg) => {
+    const handleConnect = useCallback((isMaster: boolean) => (msg: any) => {
         if (msg.status) {
             socket.setCurrentRoom(msg.room_name);
             setRoomInfo({
                 connected: true,
                 info: {
-                    room_name: msg.room_name
+                    room_name: msg.room_name,
+                    is_master: isMaster
                 }
             });
         }
@@ -32,13 +35,15 @@ export function useRoomInfo(): RoomI {
     }, [setRoomInfo, socket]);
 
     useEffect(() => {
-        socket.getSocket().on('room:create', handleConnect);
-        socket.getSocket().on('room:join', handleConnect);
+        const handleCreate = handleConnect(true);
+        const handleJoin = handleConnect(false);
+        socket.getSocket().on('room:create', handleCreate);
+        socket.getSocket().on('room:join', handleJoin);
         socket.getSocket().on('room:leave', handleDisconnect);
         socket.getSocket().on('disconnect', handleDisconnect);
         return () => {
-            socket.getSocket().off('room:create', handleConnect);
-            socket.getSocket().off('room:join', handleConnect);
+            socket.getSocket().off('room:create', handleCreate);
+            socket.getSocket().off('room:join', handleJoin);
             socket.getSocket().off('room:leave', handleDisconnect);
             socket.getSocket().off('disconnect', handleDisconnect);
         }

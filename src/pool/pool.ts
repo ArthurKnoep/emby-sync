@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io'
 import { v4 as uuid} from 'uuid';
 import {
-    NotInARoomError, PoolError,
+    NotInARoomError, NotRoomMaster, PoolError,
     RoomAlreadyExistError,
     RoomBadPasswordError,
     RoomNotFoundError,
@@ -17,11 +17,18 @@ interface UserI {
     currentRoom: string
 }
 
+enum State {
+    IDLE,
+    WAIT_SYNC,
+    PLAYING
+}
+
 interface RoomI {
     name: string
     needPassword: boolean
     password: string
     admin_user_id: string
+    state: State
 }
 
 interface PoolI {
@@ -33,6 +40,11 @@ interface UserInRoom {
     username: string;
     uuid: string;
     is_admin: boolean;
+}
+
+interface Item {
+    server_id: string;
+    item_id: string;
 }
 
 export class Pool {
@@ -106,7 +118,8 @@ export class Pool {
             name: roomName,
             needPassword: false,
             password: "",
-            admin_user_id: user.socket.id
+            admin_user_id: user.socket.id,
+            state: State.IDLE,
         };
         if (password && password !== '') {
             room.needPassword = true;
@@ -206,5 +219,21 @@ export class Pool {
             username: user.username,
             message
         });
+    }
+
+    startPlayItem(userId: string, item: Item) {
+        const user = this.getUserAndThrow(userId);
+        if (!user.currentRoom) {
+            throw new NotInARoomError();
+        }
+        const room = this.getRoom(user.currentRoom);
+        if (!room) {
+            throw new RoomNotFoundError();
+        }
+        if (userId !== room.admin_user_id) {
+            throw new NotRoomMaster();
+        }
+        room.state = State.WAIT_SYNC;
+        user.socket.broadcast.to(user.currentRoom).emit('room:onplay', item);
     }
 }

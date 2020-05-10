@@ -7,10 +7,12 @@ export class Socket {
     private readonly socket: SocketIOClient.Socket;
     private roomName?: string;
     private username?: string;
+    private isMaster?: boolean;
 
     constructor() {
         this.socket = io.connect('http://localhost:3001');
         this.roomName = undefined;
+        this.isMaster = undefined;
 
         this.socket.on('connect', () => {
             if (this.username) {
@@ -31,6 +33,7 @@ export class Socket {
             if (this.socket.connected) {
                 return resolve();
             }
+            this.socket.connect();
             this.socket.once('connect', () => {
                 resolve();
             })
@@ -59,7 +62,7 @@ export class Socket {
                 return reject(resp);
             });
             this.socket.emit('user:name', {username});
-        })
+        });
     }
 
     async createRoom(req: CreateRoomRequest): Promise<Response> {
@@ -68,12 +71,13 @@ export class Socket {
             this.socket.once('room:create', (resp: Response) => {
                 if (resp.status) {
                     this.roomName = req.room_name;
+                    this.isMaster = true;
                     return resolve(resp);
                 }
                 return reject(resp);
             });
             this.socket.emit('room:create', req);
-        })
+        });
     }
 
     async leaveRoom(): Promise<Response> {
@@ -82,6 +86,7 @@ export class Socket {
             this.socket.once('room:leave', (resp: Response) => {
                 if (resp.status) {
                     this.roomName = undefined;
+                    this.isMaster = undefined;
                     return resolve(resp);
                 }
                 return reject(resp);
@@ -96,12 +101,13 @@ export class Socket {
             this.socket.once('room:join', (resp: Response) => {
                 if (resp.status) {
                     this.roomName = req.room_name;
+                    this.isMaster = false;
                     return resolve(resp);
                 }
                 return reject(resp);
             });
             this.socket.emit('room:join', req);
-        })
+        });
     }
 
     async listUserInRoom(): Promise<UserInRoomI> {
@@ -127,11 +133,28 @@ export class Socket {
                 return reject(resp);
             });
             this.socket.emit('room:chat', {message});
-        })
+        });
+    }
+
+    async playItem(serverId: string, itemId: string): Promise<Response> {
+        await this.waitForConnection();
+        return new Promise((resolve, reject) => {
+            this.socket.once('room:play', (resp: Response) => {
+                if (resp.status) {
+                    return resolve(resp);
+                }
+                return reject(resp);
+            });
+            this.socket.emit('room:play', {server_id: serverId, item_id: itemId});
+        });
     }
 
     getCurrentRoom(): string | undefined {
         return this.roomName;
+    }
+
+    getIsMaster(): boolean | undefined {
+        return this.isMaster;
     }
 
     setCurrentRoom(roomName: string | undefined) {

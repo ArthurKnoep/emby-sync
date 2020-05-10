@@ -33,7 +33,7 @@ export function Layout({ children, isAuthenticated }: Props) {
 
     return (
         <LayoutAnt className={styles.layout}>
-            <Header>
+            <Header className={styles.header}>
                 <Menu theme="dark" mode="horizontal">
                     <Menu.Item onClick={() => setOptionsShow(true)}>Options</Menu.Item>
                     {

@@ -1,7 +1,14 @@
 .layout {
     height: 100%;
 
+    .header {
+        position: fixed;
+        z-index: 1;
+        width: 100%;
+    }
+
     .content {
+        margin-top: 64px;
         padding: 2em 1em;
     }
 }

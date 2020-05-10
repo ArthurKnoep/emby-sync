@@ -24,6 +24,7 @@ export class Handler {
             socket.on('room:leave', this.handleLeaveRoom(socket));
             socket.on('room:list', this.handleListUser(socket));
             socket.on('room:chat', this.handleChat(socket))
+            socket.on('room:play', this.handlePlay(socket))
 
             socket.on('disconnect', () => {
                 this.pool.delUser(socket.id);
@@ -110,5 +111,19 @@ export class Handler {
             }
             return socket.emit('room:chat', {status: true});
         };
+    }
+
+    handlePlay(socket: Socket) {
+        return msg => {
+            if (!msg.server_id || !msg.item_id) {
+                return socket.emit('room:play', InvalidArgE)
+            }
+            try {
+                this.pool.startPlayItem(socket.id, msg);
+            } catch (e) {
+                return socket.emit('room:play', errorToInterface(e));
+            }
+            return socket.emit('room:play', {status: true});
+        }
     }
 }

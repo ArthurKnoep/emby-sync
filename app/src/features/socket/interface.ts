@@ -15,6 +15,7 @@ export interface JoinRoomRequest {
 export interface RoomI {
     connected: boolean
     info?: {
+        is_master: boolean
         room_name: string
     }
 }

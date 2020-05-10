@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from 'react';
-import { Col, Row } from 'antd';
+import { Col, notification, Row } from 'antd';
 import { Redirect, useHistory } from 'react-router-dom';
 import { Steps } from '../Steps';
 import { useRoomInfo } from '../../features/socket/hooks';
@@ -8,9 +8,11 @@ import { Libraries } from './Libraries';
 import { Resume } from './Resume';
 import { NextUp } from './NextUp';
 import { LastItems } from './LastItems';
+import { SocketCtx } from '../../features/socket';
 
 export function Server() {
     const { authenticator, playerContext } = useContext(EmbyCtx);
+    const { socket } = useContext(SocketCtx);
     const { connected } = useRoomInfo();
     const history = useHistory();
     const emby = useMemo(() => {
@@ -22,11 +24,21 @@ export function Server() {
     }, [authenticator]);
 
     const handleItemClick = (itemId: string) => {
-        playerContext.setContext({
-            serverId: authenticator.getEmby().getServerId(),
-            itemId
-        });
-        history.push(`/servers/${authenticator.getEmby().getServerId()}/items/${itemId}/play`);
+        (async () => {
+            try {
+                await socket.playItem(authenticator.getEmby().getServerId(), itemId);
+                playerContext.setContext({
+                    serverId: authenticator.getEmby().getServerId(),
+                    itemId
+                });
+                history.push(`/servers/${authenticator.getEmby().getServerId()}/items/${itemId}/play`);
+            } catch (e) {
+                notification.error({
+                    message: 'Could not play item',
+                    description: e.message
+                })
+            }
+        })();
     };
 
     if (!connected) {
