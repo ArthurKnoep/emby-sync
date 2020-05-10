@@ -1,7 +1,7 @@
-import React, { useContext, useMemo, useRef } from 'react';
-import { Modal, Form, Select, Radio, Slider } from 'antd';
-import { getNames, alpha2ToAlpha3B } from '@cospired/i18n-iso-languages';
-import { OptionsCtx } from '../../../features/options';
+import React, { useContext, useMemo, useRef, useState } from 'react';
+import { Form, Modal, Radio, Select, Slider } from 'antd';
+import { alpha2ToAlpha3B, getNames } from '@cospired/i18n-iso-languages';
+import { OptionsCtx, SubType } from '../../../features/options';
 
 interface Props {
     visible?: boolean
@@ -40,6 +40,7 @@ export function Options({ visible = true, onClose }: Props) {
     const countryList = useMemo(() => getNames("en"), []);
     const formElem = useRef(null);
     const { options } = useContext(OptionsCtx);
+    const [subType, setSubType] = useState<SubType>(options.getOpt().defaultSubType);
 
     return (
         <Modal
@@ -51,8 +52,13 @@ export function Options({ visible = true, onClose }: Props) {
                 }
             }}
             onOk={() => {
-                // @ts-ignore
-                console.log(formElem.current?.getFieldsValue())
+                if (formElem.current) {
+                    // @ts-ignore
+                    options.setOpt(formElem.current.getFieldsValue());
+                }
+                if (onClose) {
+                    onClose();
+                }
             }}
         >
             <Form
@@ -75,17 +81,17 @@ export function Options({ visible = true, onClose }: Props) {
                     label="Default subtitle mode"
                     name="defaultSubType"
                 >
-                    <Radio.Group>
-                        <Radio value={0}>None</Radio>
-                        <Radio value={1}>Forced</Radio>
-                        <Radio value={2}>Complete</Radio>
+                    <Radio.Group value={subType} onChange={sub => setSubType(sub.target.value)}>
+                        <Radio value={SubType.NONE}>None</Radio>
+                        <Radio value={SubType.FORCED}>Forced</Radio>
+                        <Radio value={SubType.COMPLETE}>Complete</Radio>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item
                     label="Default subtitle language"
                     name="defaultSubLanguage"
                 >
-                    <Select showSearch>
+                    <Select showSearch disabled={subType === SubType.NONE}>
                         {
                             Object.entries(countryList).map(([k, v]) => {
                                 return <Select.Option key={k} value={alpha2ToAlpha3B(k)}>{v}</Select.Option>;

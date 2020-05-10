@@ -63,7 +63,7 @@ export function CreateRoom() {
             <Item
                 wrapperCol={{offset: 5, span: 16}}
             >
-                <Checkbox checked={usePassword} onChange={e => setUsePassword(e.target.checked)} >Require a password</Checkbox>
+                <Checkbox checked={usePassword} onChange={e => setUsePassword(e.target.checked)}>Require a password</Checkbox>
             </Item>
             {
                 (usePassword)

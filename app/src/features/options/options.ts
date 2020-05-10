@@ -2,10 +2,10 @@ import { alpha2ToAlpha3B, registerLocale } from '@cospired/i18n-iso-languages';
 
 registerLocale(require("@cospired/i18n-iso-languages/langs/en.json"));
 
-enum SubType {
-    None,
-    Forced,
-    Complete
+export enum SubType {
+    NONE,
+    FORCED,
+    COMPLETE
 }
 
 interface Opt {
@@ -33,7 +33,6 @@ export class Options {
             this.opt = Options.createDefaultConfig();
             window.localStorage.setItem(OPTIONS_KEY, JSON.stringify(this.opt));
         }
-        console.log(this.opt);
     }
 
     private static createDefaultConfig(): Opt {
@@ -47,13 +46,14 @@ export class Options {
         return {
             defaultAudioLanguage: defaultLanguage,
             defaultSubLanguage: defaultLanguage,
-            defaultSubType: SubType.Forced,
+            defaultSubType: SubType.FORCED,
             maxBitrate: 30 * 1000 * 1000
         };
     }
 
     setOpt(opt: Opt) {
         this.opt = opt;
+        window.localStorage.setItem(OPTIONS_KEY, JSON.stringify(this.opt));
     }
 
     getOpt(): Opt {
