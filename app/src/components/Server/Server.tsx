@@ -26,11 +26,12 @@ export function Server() {
     const handleItemClick = (itemId: string) => {
         (async () => {
             try {
-                await socket.playItem(authenticator.getEmby().getServerId(), itemId);
+                const resp = await socket.playItem(authenticator.getEmby().getServerId(), itemId);
                 playerContext.setContext({
                     serverId: authenticator.getEmby().getServerId(),
                     itemId
                 });
+                playerContext.setNbUserToWait(resp.data.user_to_wait);
                 history.push(`/servers/${authenticator.getEmby().getServerId()}/items/${itemId}/play`);
             } catch (e) {
                 notification.error({

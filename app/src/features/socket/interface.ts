@@ -2,6 +2,11 @@ export interface Response {
     status: boolean
 }
 
+export interface ResponseWithData<T> {
+    status: boolean
+    data: T
+}
+
 export interface CreateRoomRequest {
     room_name: string
     room_password?: string
@@ -21,7 +26,6 @@ export interface RoomI {
 }
 
 export interface UserInRoomI {
-    status: true
     users: [{
         username: string
         uuid: string
@@ -34,4 +38,13 @@ export interface Message {
     date: Date,
     username: string;
     message: string;
+}
+
+export interface PlayItemI {
+    user_to_wait: number;
+}
+
+export interface OnLoadedI {
+    uuid: string;
+    username: string;
 }

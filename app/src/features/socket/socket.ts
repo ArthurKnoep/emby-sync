@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import { notification } from 'antd';
 import { CancelablePromise } from '../../utils';
-import { CreateRoomRequest, JoinRoomRequest, Response, UserInRoomI } from './interface';
+import { CreateRoomRequest, JoinRoomRequest, PlayItemI, Response, ResponseWithData, UserInRoomI } from './interface';
 
 export class Socket {
     private readonly socket: SocketIOClient.Socket;
@@ -110,10 +110,10 @@ export class Socket {
         });
     }
 
-    async listUserInRoom(): Promise<UserInRoomI> {
+    async listUserInRoom(): Promise<ResponseWithData<UserInRoomI>> {
         await this.waitForConnection();
         return new Promise((resolve, reject) => {
-            this.socket.once('room:list', (resp: UserInRoomI) => {
+            this.socket.once('room:list', (resp: ResponseWithData<UserInRoomI>) => {
                 if (resp.status) {
                     return resolve(resp);
                 }
@@ -136,16 +136,29 @@ export class Socket {
         });
     }
 
-    async playItem(serverId: string, itemId: string): Promise<Response> {
+    async playItem(serverId: string, itemId: string): Promise<ResponseWithData<PlayItemI>> {
         await this.waitForConnection();
         return new Promise((resolve, reject) => {
-            this.socket.once('room:play', (resp: Response) => {
+            this.socket.once('room:play', (resp: ResponseWithData<PlayItemI>) => {
                 if (resp.status) {
                     return resolve(resp);
                 }
                 return reject(resp);
             });
             this.socket.emit('room:play', {server_id: serverId, item_id: itemId});
+        });
+    }
+
+    async playStarted(): Promise<Response> {
+        await this.waitForConnection();
+        return new Promise((resolve, reject) => {
+            this.socket.once('play:start', (resp: Response) => {
+                if (resp.status) {
+                    return resolve(resp);
+                }
+                return reject(resp);
+            });
+            this.socket.emit('play:start');
         });
     }
 

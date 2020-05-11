@@ -23,8 +23,11 @@ export class Handler {
             socket.on('room:join', this.handleJoinRoom(socket));
             socket.on('room:leave', this.handleLeaveRoom(socket));
             socket.on('room:list', this.handleListUser(socket));
-            socket.on('room:chat', this.handleChat(socket))
-            socket.on('room:play', this.handlePlay(socket))
+            socket.on('room:chat', this.handleChat(socket));
+            socket.on('room:play', this.handlePlay(socket));
+
+            socket.on('play:loaded', this.handleItemLoaded(socket));
+            socket.on('play:start', this.handlePlayStart(socket));
 
             socket.on('disconnect', () => {
                 this.pool.delUser(socket.id);
@@ -94,7 +97,7 @@ export class Handler {
     handleListUser(socket: Socket) {
         return () => {
             this.pool.listRoom(socket.id)
-                .then(userList => socket.emit('room:list', {status:true, users: userList}))
+                .then(userList => socket.emit('room:list', {status:true, data: {users: userList}}))
                 .catch(err => socket.emit('room:list', errorToInterface(err)))
         };
     }
@@ -118,12 +121,31 @@ export class Handler {
             if (!msg.server_id || !msg.item_id) {
                 return socket.emit('room:play', InvalidArgE)
             }
+            this.pool.startPlayItem(socket.id, msg)
+                .then(nbUser => socket.emit('room:play', {status: true, data: {user_to_wait: nbUser}}))
+                .catch(e => socket.emit('room:play', errorToInterface(e)));
+        }
+    }
+
+    handleItemLoaded(socket: Socket) {
+        return () => {
             try {
-                this.pool.startPlayItem(socket.id, msg);
+                this.pool.notifyItemLoaded(socket.id);
             } catch (e) {
-                return socket.emit('room:play', errorToInterface(e));
+                return socket.emit('play:loaded', errorToInterface(e));
             }
-            return socket.emit('room:play', {status: true});
+            return socket.emit('play:loaded', {status: true});
+        }
+    }
+
+    handlePlayStart(socket: Socket) {
+        return () => {
+            try {
+                this.pool.playStarted(socket.id);
+            } catch (e) {
+                return socket.emit('play:start', errorToInterface(e));
+            }
+            return socket.emit('play:start', {status: true});
         }
     }
 }

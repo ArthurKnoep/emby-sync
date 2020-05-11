@@ -61,3 +61,10 @@ export class NotRoomMaster extends PoolError {
         this.name = "NotRoomMaster";
     }
 }
+
+export class IsRoomMaster extends PoolError {
+    constructor() {
+        super("The user is the master of the room");
+        this.name = "IsRoomMaster";
+    }
+}

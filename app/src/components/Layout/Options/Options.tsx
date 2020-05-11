@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useRef, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { Form, Modal, Radio, Select, Slider, Button, notification } from 'antd';
 import { alpha2ToAlpha3B, getNames } from '@cospired/i18n-iso-languages';
 import { OptionsCtx, SubType } from '../../../features/options';

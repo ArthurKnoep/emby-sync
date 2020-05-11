@@ -40,7 +40,7 @@ export function UserList() {
         socket.listUserInRoom()
             .then(resp => {
                 let u: User[] = [];
-                resp.users.forEach(elem => {
+                resp.data.users.forEach(elem => {
                     u.push({
                         username: elem.username,
                         uuid: elem.uuid,

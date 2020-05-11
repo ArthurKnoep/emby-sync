@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io'
 import { v4 as uuid} from 'uuid';
 import {
+    IsRoomMaster,
     NotInARoomError, NotRoomMaster, PoolError,
     RoomAlreadyExistError,
     RoomBadPasswordError,
@@ -221,7 +222,53 @@ export class Pool {
         });
     }
 
-    startPlayItem(userId: string, item: Item) {
+    startPlayItem(userId: string, item: Item): Promise<number> {
+        return new Promise((resolve, reject) => {
+            const user = this.getUserAndThrow(userId);
+            if (!user.currentRoom) {
+                return reject(new NotInARoomError());
+            }
+            const room = this.getRoom(user.currentRoom);
+            if (!room) {
+                return reject(new RoomNotFoundError());
+            }
+            if (userId !== room.admin_user_id) {
+                return reject(new NotRoomMaster());
+            }
+            room.state = State.WAIT_SYNC;
+            user.socket.broadcast.to(user.currentRoom).emit('room:onplay', item);
+            this.io.in(room.name).clients((err, clients) => {
+                if (err) {
+                    return reject(new PoolError("Could not list users in room"))
+                }
+                let nbClient = 0;
+                clients.forEach(client => {
+                    if (client !== user.socket.id) {
+                        nbClient += 1;
+                    }
+                });
+                resolve(nbClient);
+            });
+        });
+    }
+
+    notifyItemLoaded(userId: string) {
+        const user = this.getUserAndThrow(userId);
+        if (!user.currentRoom) {
+            throw new NotInARoomError();
+        }
+        const room = this.getRoom(user.currentRoom);
+        if (!room) {
+            throw new RoomNotFoundError();
+        }
+        if (userId === room.admin_user_id) {
+            throw new IsRoomMaster();
+        }
+        const admin = this.getUserAndThrow(room.admin_user_id);
+        admin.socket.emit('play:onloaded', {uuid: user.uuid, username: user.username});
+    }
+
+    playStarted(userId: string) {
         const user = this.getUserAndThrow(userId);
         if (!user.currentRoom) {
             throw new NotInARoomError();
@@ -233,7 +280,7 @@ export class Pool {
         if (userId !== room.admin_user_id) {
             throw new NotRoomMaster();
         }
-        room.state = State.WAIT_SYNC;
-        user.socket.broadcast.to(user.currentRoom).emit('room:onplay', item);
+        room.state = State.PLAYING;
+        user.socket.broadcast.to(room.name).emit('play:started');
     }
 }
