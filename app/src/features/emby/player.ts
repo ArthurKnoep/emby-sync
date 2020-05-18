@@ -1,7 +1,7 @@
 import HLS from 'hls.js';
 import { Emby } from './emby';
 import { Options } from '../options';
-import { Context } from './playerContext';
+import { Context, PlayerContext } from './playerContext';
 import { OnLoadedI } from '../socket/interface';
 
 enum PlayMode {
@@ -66,8 +66,12 @@ export class Player {
         if (item.MediaSources.length === 0) {
             throw new Error("No media sources");
         }
+        const audioStreamIndex = PlayerContext.getAudioTrackIdx(item, playerCtx, this.options.getOpt().defaultAudioLanguage);
+        if (audioStreamIndex === -1) {
+            throw new Error("Invalid audio stream");
+        }
         const mediaId = item.MediaSources[0].Id;
-        const playbackInfo = await this.emby.playbackInfo(playerCtx.itemId, 1, 3, mediaId);
+        const playbackInfo = await this.emby.playbackInfo(playerCtx.itemId, audioStreamIndex, 3, mediaId);
         if (playbackInfo.MediaSources.length > 0) {
             if (playbackInfo.MediaSources[0].SupportsDirectStream) {
                 this.mode = PlayMode.Direct;
