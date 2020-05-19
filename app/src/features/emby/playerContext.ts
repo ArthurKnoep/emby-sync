@@ -1,4 +1,5 @@
 import { FullItemI } from './interface';
+import { Opt, SubType } from '../options';
 
 export interface Context {
     serverId: string
@@ -31,7 +32,7 @@ export class PlayerContext {
         return this.nbUserToWait;
     }
 
-    static getAudioTrackIdx(item: FullItemI, ctx: Context, defaultAudio: string): number {
+    static getAudioTrackIdx(item: FullItemI, ctx: Context, options: Opt): number {
         if (!item.MediaSources || item.MediaSources.length === 0) {
             return -1;
         }
@@ -42,15 +43,37 @@ export class PlayerContext {
             return -1;
         }
         let defaultStreamIdx = -1;
-        for (let i = 0; item.MediaSources[0].MediaStreams[i]; i++) {
-            const stream = item.MediaSources[0].MediaStreams[i];
+        for (const stream of item.MediaSources[0].MediaStreams) {
             if (stream.Type === 'Audio' && defaultStreamIdx === -1) {
-                defaultStreamIdx = i;
+                defaultStreamIdx = stream.Index;
             }
-            if (stream.Type === 'Audio' && stream.Language === defaultAudio) {
-                return i;
+            if (stream.Type === 'Audio' && stream.Language === options.defaultAudioLanguage) {
+                return stream.Index;
             }
         }
         return defaultStreamIdx;
+    }
+
+    static getSubtitleTrackIdx(item: FullItemI, ctx: Context, options: Opt): number {
+        if (!item.MediaSources || item.MediaSources.length === 0) {
+            return -1;
+        }
+        if (ctx.subtitleStreamIndex && item.MediaSources[0].MediaStreams[ctx.subtitleStreamIndex]) {
+            if (item.MediaSources[0].MediaStreams[ctx.subtitleStreamIndex].Type === 'Subtitle') {
+                return ctx.subtitleStreamIndex;
+            }
+            return -1;
+        }
+        if (options.defaultSubType === SubType.NONE) {
+            return -1;
+        }
+        for (const stream of item.MediaSources[0].MediaStreams) {
+            if (stream.Type === 'Subtitle' && stream.Language === options.defaultSubLanguage) {
+                if ((options.defaultSubType === SubType.FORCED && stream.IsForced) || options.defaultSubType === SubType.COMPLETE) {
+                    return stream.Index;
+                }
+            }
+        }
+        return -1;
     }
 }

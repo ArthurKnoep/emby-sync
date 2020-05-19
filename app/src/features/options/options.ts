@@ -8,7 +8,7 @@ export enum SubType {
     COMPLETE
 }
 
-interface Opt {
+export interface Opt {
     defaultAudioLanguage: string
     defaultSubLanguage: string
     defaultSubType: SubType
