@@ -452,3 +452,29 @@ export interface PlaybackInfoI {
     PlaySessionId: string;
 }
 
+export interface ReportPlayingRequestI {
+    AudioStreamIndex: number;
+    BufferedRanges: [{
+        start: number;
+        end: number;
+    }];
+    CanSeek: boolean;
+    IsMuted: boolean;
+    IsPaused: boolean;
+    ItemId: string;
+    MaxStreamingBitrate: number;
+    MediaSourceId: string;
+    NowPlayingQueue?: [{
+        Id: string;
+        PlaylistItemId: string;
+    }];
+    PlayMethod: "Transcode" | "DirectPlay" | "DirectStream";
+    PlaySessionId: string;
+    PlaybackStartTimeTicks: number;
+    PlaylistIndex?: number;
+    PlaylistLength?: number;
+    PositionTicks: number;
+    RepeatMode: "RepeatNone";
+    SubtitleStreamIndex: number;
+    VolumeLevel: number;
+}

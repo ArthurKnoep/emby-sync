@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { Device } from './device';
-import { InfoI, LoadLibrariesI, LoadItemsI, ItemI, FullItemI, PlaybackInfoI } from './interface';
+import { InfoI, LoadLibrariesI, LoadItemsI, ItemI, FullItemI, PlaybackInfoI, ReportPlayingRequestI } from './interface';
 import * as path from 'path';
 
 export const APPLICATION_NAME = 'Emby Sync';
@@ -119,7 +119,7 @@ export class Emby {
         return latest as ItemI[];
     }
 
-    async playbackInfo(itemId: string, audioStreamIndex: number, subtitleStreamIndex: number, mediaSourceId: string): Promise<PlaybackInfoI> {
+    async playbackInfo(itemId: string, audioStreamIndex: number, subtitleStreamIndex: number, mediaSourceId: string, maxBitrate: number): Promise<PlaybackInfoI> {
         const { data: playbackInfo } = await this.requester.post(`/Items/${itemId}/PlaybackInfo`, this.device.getDeviceProfile(), {
             params: {
                 UserId: this.localUserId,
@@ -129,7 +129,7 @@ export class Emby {
                 AudioStreamIndex: audioStreamIndex,
                 SubtitleStreamIndex: subtitleStreamIndex,
                 MediaSourceId: mediaSourceId,
-                MaxStreamingBitrate: 10000000
+                MaxStreamingBitrate: maxBitrate
             }
         });
         return playbackInfo as PlaybackInfoI;
@@ -140,6 +140,17 @@ export class Emby {
         return item as FullItemI;
     }
 
+    async reportStartPlaying(report: ReportPlayingRequestI): Promise<void> {
+        await this.requester.post('/Sessions/Playing', report);
+    }
+
+    async reportPlayingProgress(report: ReportPlayingRequestI): Promise<void> {
+        await this.requester.post('/Sessions/Playing/Progress', report);
+    }
+
+    async reportPlayingStop(report: ReportPlayingRequestI): Promise<void> {
+        await this.requester.post('/Sessions/Playing/Stopped', report);
+    }
 
     private async queryBitrateTest(size: number): Promise<number> {
         const startDate = new Date().getTime();

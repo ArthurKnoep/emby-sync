@@ -3,19 +3,30 @@ import { Emby } from './emby';
 import { Options } from '../options';
 import { Context, PlayerContext } from './playerContext';
 import { OnLoadedI } from '../socket/interface';
+import { ReportPlayingRequestI } from './interface';
 
 enum PlayMode {
     Direct,
     Transcode
 }
 
+interface Session {
+    SessionId: string;
+    PlayMode: PlayMode;
+    AudioStreamIndex: number;
+    SubtitleStreamIndex: number;
+    MaxBitrate: number;
+    ItemId: string;
+    MediaSourceId: string;
+}
+
 export class Player {
     private readonly hls: HLS;
     private readonly options: Options;
-    private mode?: PlayMode;
     private emby: Emby;
     private videoElement?: HTMLVideoElement;
     private temporaryCallback?: () => void;
+    private session?: Session;
     private waitingForUser: { count: number, list: OnLoadedI[] };
 
     constructor(emby: Emby, options: Options) {
@@ -28,6 +39,32 @@ export class Player {
     attachMedia(videoElement: HTMLVideoElement) {
         this.hls.attachMedia(videoElement);
         this.videoElement = videoElement;
+    }
+
+    private generateProgressReport(): ReportPlayingRequestI {
+        if (!this.videoElement) {
+            throw new Error('video element not attached');
+        }
+        if (!this.session) {
+            throw new Error('no session');
+        }
+        return {
+            AudioStreamIndex: this.session.AudioStreamIndex,
+            BufferedRanges: [{end: 0, start: 0}],
+            CanSeek: false,
+            IsMuted: this.videoElement.muted,
+            IsPaused: this.videoElement.paused,
+            ItemId: this.session.ItemId,
+            MaxStreamingBitrate: this.session.MaxBitrate,
+            MediaSourceId: this.session.MediaSourceId,
+            PlayMethod: this.session.PlayMode === PlayMode.Transcode ? "Transcode": "DirectPlay",
+            PlaySessionId: this.session.SessionId,
+            PlaybackStartTimeTicks: 0,
+            PositionTicks: this.videoElement.currentTime * 1000000,
+            RepeatMode: 'RepeatNone',
+            SubtitleStreamIndex: this.session.SubtitleStreamIndex,
+            VolumeLevel: this.videoElement.volume * 100
+        };
     }
 
     private loadedVideoElementCB(cb: () => void) {
@@ -72,18 +109,28 @@ export class Player {
         }
         const subtitleStreamIndex = PlayerContext.getSubtitleTrackIdx(item, playerCtx, this.options.getOpt());
         const mediaId = item.MediaSources[0].Id;
-        const playbackInfo = await this.emby.playbackInfo(playerCtx.itemId, audioStreamIndex, subtitleStreamIndex, mediaId);
+        const playbackInfo = await this.emby.playbackInfo(playerCtx.itemId, audioStreamIndex, subtitleStreamIndex, mediaId, this.options.getOpt().maxBitrate);
         if (playbackInfo.MediaSources.length > 0) {
+            let mode;
             if (playbackInfo.MediaSources[0].SupportsDirectStream) {
-                this.mode = PlayMode.Direct;
+                mode = PlayMode.Direct;
                 this.temporaryCallback = this.loadedVideoElementCB(cbVideoLoaded);
                 this.videoElement.addEventListener('loadeddata', this.temporaryCallback);
                 this.videoElement.src = this.emby.appendServerBaseUrl(playbackInfo.MediaSources[0].DirectStreamUrl);
             } else if (playbackInfo.MediaSources[0].SupportsTranscoding) {
-                this.mode = PlayMode.Transcode;
+                mode = PlayMode.Transcode;
                 this.hls.loadSource(this.emby.appendServerBaseUrl(playbackInfo.MediaSources[0].TranscodingUrl));
                 this.hls.once(HLS.Events.BUFFER_APPENDED, cbVideoLoaded);
             }
+            this.session = {
+                AudioStreamIndex: audioStreamIndex,
+                MaxBitrate: this.options.getOpt().maxBitrate,
+                MediaSourceId: mediaId,
+                PlayMode: mode || PlayMode.Direct,
+                SessionId: playbackInfo.PlaySessionId,
+                SubtitleStreamIndex: subtitleStreamIndex,
+                ItemId: playerCtx.itemId
+            };
         }
     }
 }
