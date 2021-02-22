@@ -94,7 +94,11 @@ export function Options({ visible = true, onClose }: Props) {
                     <Select showSearch>
                         {
                             Object.entries(countryList).map(([k, v]) => {
-                                return <Select.Option key={k} value={alpha2ToAlpha3B(k)}>{v}</Select.Option>;
+                                const alpha3b = alpha2ToAlpha3B(k);
+                                if (!alpha3b) {
+                                    return null;
+                                }
+                                return <Select.Option key={k} value={alpha3b}>{v}</Select.Option>;
                             })
                         }
                     </Select>
@@ -116,7 +120,11 @@ export function Options({ visible = true, onClose }: Props) {
                     <Select showSearch disabled={subType === SubType.NONE}>
                         {
                             Object.entries(countryList).map(([k, v]) => {
-                                return <Select.Option key={k} value={alpha2ToAlpha3B(k)}>{v}</Select.Option>;
+                                const alpha3b = alpha2ToAlpha3B(k);
+                                if (!alpha3b) {
+                                    return null;
+                                }
+                                return <Select.Option key={k} value={alpha3b}>{v}</Select.Option>;
                             })
                         }
                     </Select>
@@ -128,7 +136,7 @@ export function Options({ visible = true, onClose }: Props) {
                     <Slider
                         min={192*1000}
                         max={60*1000*1000}
-                        tipFormatter={value => (`${getQuality(value)} - ${prettyPrintBitrate(value)}`)}
+                        tipFormatter={value => (`${getQuality(value || 0)} - ${prettyPrintBitrate(value || 0)}`)}
                     />
                 </Form.Item>
                 <Button onClick={autoDetectBitrate} loading={isAutoDetectingBitrate}>

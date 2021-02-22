@@ -103,7 +103,7 @@ export class Authenticator extends EventEmitter {
         if (!this.loginInfo) {
             return null;
         }
-        return this.loginInfo.User.DisplayName;
+        return this.loginInfo.User.Name;
     }
 
     leaveServer() {

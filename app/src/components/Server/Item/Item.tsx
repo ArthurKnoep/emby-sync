@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge, Typography } from 'antd';
-import { CheckCircleFilled, RightCircleFilled } from '@ant-design/icons';
+import { CheckCircleFilled, PlayCircleFilled } from '@ant-design/icons';
 import classNames from 'classnames';
 import { BackgroundImageLoader } from '../../BackgroundImageLoader';
 import styles from './Item.module.scss';
@@ -59,7 +59,7 @@ export function Item(
                     }
                     <div className={styles.background} />
                     <div className={styles.playBtnContainer} onClick={handleClick}>
-                        <RightCircleFilled />
+                        <PlayCircleFilled />
                     </div>
                     {
                         (hasBeenPlayed)
