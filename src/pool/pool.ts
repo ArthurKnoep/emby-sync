@@ -283,4 +283,19 @@ export class Pool {
         room.state = State.PLAYING;
         user.socket.broadcast.to(room.name).emit('play:started');
     }
+
+    playStopped(userId: string) {
+        const user = this.getUserAndThrow(userId);
+        if (!user.currentRoom) {
+            throw new NotInARoomError();
+        }
+        const room = this.getRoom(user.currentRoom);
+        if (!room) {
+            throw new RoomNotFoundError();
+        }
+        if (userId === room.admin_user_id) {
+            room.state = State.IDLE;
+            user.socket.broadcast.to(room.name).emit('play:stopped');
+        }
+    }
 }

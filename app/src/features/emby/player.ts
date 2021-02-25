@@ -3,7 +3,7 @@ import { Emby } from './emby';
 import { Options } from '../options';
 import { Context, PlayerContext } from './playerContext';
 import { OnLoadedI } from '../socket/interface';
-import { ReportPlayingRequestI } from './interface';
+import { BufferRangeI, ReportPlayingRequestI } from './interface';
 
 enum PlayMode {
     Direct,
@@ -24,13 +24,15 @@ export class Player {
     private readonly hls: HLS;
     private readonly options: Options;
     private emby: Emby;
+    private readonly canControl: boolean;
     private videoElement?: HTMLVideoElement;
     private temporaryCallback?: () => void;
     private session?: Session;
     private waitingForUser: { count: number, list: OnLoadedI[] };
 
-    constructor(emby: Emby, options: Options) {
+    constructor(emby: Emby, options: Options, canControl: boolean) {
         this.hls = new HLS();
+        this.canControl = canControl;
         this.emby = emby;
         this.options = options;
         this.waitingForUser = {count: 0, list: []};
@@ -41,6 +43,10 @@ export class Player {
         this.videoElement = videoElement;
     }
 
+    private static convertSecondToEmbyTick(seconds: number): number {
+        return Math.round(seconds * 10000000);
+    }
+
     private generateProgressReport(): ReportPlayingRequestI {
         if (!this.videoElement) {
             throw new Error('video element not attached');
@@ -48,23 +54,38 @@ export class Player {
         if (!this.session) {
             throw new Error('no session');
         }
+        const bufferRanges: BufferRangeI[] = [];
+        for (let i = 0; i < this.videoElement.buffered.length; i++) {
+            bufferRanges.push({
+                start: Player.convertSecondToEmbyTick(this.videoElement.buffered.start(i)),
+                end: Player.convertSecondToEmbyTick(this.videoElement.buffered.end(i))
+            });
+        }
         return {
             AudioStreamIndex: this.session.AudioStreamIndex,
-            BufferedRanges: [{end: 0, start: 0}],
-            CanSeek: false,
+            BufferedRanges: bufferRanges,
+            CanSeek: this.canControl,
             IsMuted: this.videoElement.muted,
             IsPaused: this.videoElement.paused,
             ItemId: this.session.ItemId,
             MaxStreamingBitrate: this.session.MaxBitrate,
             MediaSourceId: this.session.MediaSourceId,
-            PlayMethod: this.session.PlayMode === PlayMode.Transcode ? "Transcode": "DirectPlay",
+            PlayMethod: this.session.PlayMode === PlayMode.Transcode ? 'Transcode' : 'DirectPlay',
             PlaySessionId: this.session.SessionId,
             PlaybackStartTimeTicks: 0,
-            PositionTicks: this.videoElement.currentTime * 1000000,
+            PositionTicks: Player.convertSecondToEmbyTick(this.videoElement.currentTime),
             RepeatMode: 'RepeatNone',
             SubtitleStreamIndex: this.session.SubtitleStreamIndex,
-            VolumeLevel: this.videoElement.volume * 100
+            VolumeLevel: Math.round(this.videoElement.volume * 100),
         };
+    }
+
+    async reportStartPlay() {
+        await this.emby.reportStartPlaying(this.generateProgressReport());
+    }
+
+    async reportProgress() {
+        await this.emby.reportPlayingProgress(this.generateProgressReport());
     }
 
     private loadedVideoElementCB(cb: () => void) {
@@ -132,5 +153,15 @@ export class Player {
                 ItemId: playerCtx.itemId
             };
         }
+    }
+
+    async stop() {
+        if (this.videoElement) {
+            this.videoElement.pause();
+            this.videoElement.currentTime = 0;
+        }
+        this.hls.stopLoad();
+        this.hls.destroy();
+        await this.emby.reportPlayingStop(this.generateProgressReport());
     }
 }

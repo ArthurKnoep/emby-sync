@@ -1,5 +1,6 @@
 {
   "name": "emby-sync",
+  "displayName": "Emby Sync",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

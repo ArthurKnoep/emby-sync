@@ -7,11 +7,10 @@ import { ServerI } from '../../features/emby/interface';
 import styles from './Servers.module.scss';
 import { SocketCtx } from '../../features/socket';
 import { useRoomInfo } from '../../features/socket/hooks';
-import { MenubarCtx, useRedirectBackButton } from '../../features/menubar';
+import { useRedirectBackButton } from '../../features/menubar';
 
 export function Servers() {
     const { authenticator } = useContext(EmbyCtx);
-    const { menubarController } = useContext(MenubarCtx);
     const history = useHistory();
     const { socket } = useContext(SocketCtx);
     const { connected } = useRoomInfo();

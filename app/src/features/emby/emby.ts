@@ -1,10 +1,11 @@
 import axios, { AxiosInstance } from 'axios';
+import * as path from 'path';
+import packageInfo from '../../../package.json';
 import { Device } from './device';
 import { InfoI, LoadLibrariesI, LoadItemsI, ItemI, FullItemI, PlaybackInfoI, ReportPlayingRequestI } from './interface';
-import * as path from 'path';
 
-export const APPLICATION_NAME = 'Emby Sync';
-export const APPLICATION_VERSION = '0.0.1';
+export const APPLICATION_NAME = packageInfo.displayName;
+export const APPLICATION_VERSION = packageInfo.version;
 
 export class Emby {
     private requester: AxiosInstance;
@@ -41,7 +42,6 @@ export class Emby {
 
     async getLibraries(): Promise<LoadLibrariesI> {
         if (this.libraries) {
-            console.log('libraries from cache');
             return this.libraries;
         }
         const { data: libraries } = await this.requester.get(`/Users/${this.localUserId}/Views`);

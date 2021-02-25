@@ -6,7 +6,7 @@ import styles from './RoomBox.module.scss';
 import { useRoomInfo } from '../../../features/socket/hooks';
 import { UserList } from './UserList';
 import { Chat } from './Chat';
-import { EmbyCtx } from '../../../features/emby/embyCtx';
+import { EmbyCtx } from '../../../features/emby';
 import { SocketCtx } from '../../../features/socket';
 
 export function RoomBox() {

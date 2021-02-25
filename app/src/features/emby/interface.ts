@@ -452,12 +452,14 @@ export interface PlaybackInfoI {
     PlaySessionId: string;
 }
 
+export interface BufferRangeI {
+    start: number;
+    end: number;
+}
+
 export interface ReportPlayingRequestI {
     AudioStreamIndex: number;
-    BufferedRanges: [{
-        start: number;
-        end: number;
-    }];
+    BufferedRanges: BufferRangeI[];
     CanSeek: boolean;
     IsMuted: boolean;
     IsPaused: boolean;

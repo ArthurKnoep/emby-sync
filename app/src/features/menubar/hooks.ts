@@ -6,7 +6,6 @@ import { useHistory } from 'react-router-dom';
 export function useRedirectBackButton(redirectTo: string) {
     const { menubarController } = useContext(MenubarCtx);
     const history = useHistory();
-
     useEffect(() => {
         menubarController.setEnableBackButton(true);
         const handleBackClick = () => {
@@ -16,7 +15,7 @@ export function useRedirectBackButton(redirectTo: string) {
         return () => {
             menubarController.removeListener(Event.BACK_BUTTON_CLICK, handleBackClick);
         };
-    }, [menubarController]);
+    }, [menubarController, history, redirectTo]);
 }
 
 export function useMenubarConfiguration(): MenubarConfiguration {
