@@ -3,12 +3,13 @@ import { Col, notification, Row } from 'antd';
 import { Redirect, useHistory } from 'react-router-dom';
 import { Steps } from '../Steps';
 import { useRoomInfo } from '../../features/socket/hooks';
-import { EmbyCtx } from '../../features/emby/embyCtx';
+import { EmbyCtx } from '../../features/emby';
 import { Libraries } from './Libraries';
 import { Resume } from './Resume';
 import { NextUp } from './NextUp';
 import { LastItems } from './LastItems';
 import { SocketCtx } from '../../features/socket';
+import { useRedirectBackButton } from '../../features/menubar';
 
 export function Server() {
     const { authenticator, playerContext } = useContext(EmbyCtx);
@@ -22,6 +23,7 @@ export function Server() {
             return null;
         }
     }, [authenticator]);
+    useRedirectBackButton('/servers');
 
     const handleItemClick = (itemId: string) => {
         (async () => {

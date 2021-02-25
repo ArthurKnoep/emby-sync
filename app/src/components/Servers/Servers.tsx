@@ -2,19 +2,22 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Redirect, useHistory } from 'react-router-dom';
 import { Card, Col, notification, Row, Spin, Typography } from "antd";
 import { Steps } from "../Steps";
-import { EmbyCtx } from '../../features/emby/embyCtx';
+import { EmbyCtx } from '../../features/emby';
 import { ServerI } from '../../features/emby/interface';
 import styles from './Servers.module.scss';
 import { SocketCtx } from '../../features/socket';
 import { useRoomInfo } from '../../features/socket/hooks';
+import { MenubarCtx, useRedirectBackButton } from '../../features/menubar';
 
 export function Servers() {
     const { authenticator } = useContext(EmbyCtx);
+    const { menubarController } = useContext(MenubarCtx);
     const history = useHistory();
     const { socket } = useContext(SocketCtx);
     const { connected } = useRoomInfo();
     const [servers, setServers] = useState<ServerI[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    useRedirectBackButton('/rooms');
 
     const handleServerConnect = useCallback((server: ServerI) => {
         authenticator.exchangeToken(server)

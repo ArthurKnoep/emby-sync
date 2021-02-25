@@ -2,12 +2,13 @@ import React, { useContext, useRef, useMemo, useEffect, useCallback, useState } 
 import { Redirect } from 'react-router-dom';
 import HLS from 'hls.js';
 import { notification, Row, Col } from 'antd';
-import { EmbyCtx } from '../../features/emby/embyCtx';
+import { EmbyCtx } from '../../features/emby';
 import { Player as EmbyPlayer } from '../../features/emby/player';
 import { useRoomInfo } from '../../features/socket/hooks';
 import { OptionsCtx } from '../../features/options';
 import { SocketCtx } from '../../features/socket';
 import { OnLoadedI } from '../../features/socket/interface';
+import { useRedirectBackButton } from '../../features/menubar';
 import styles from './Player.module.scss';
 
 export function Player() {
@@ -24,6 +25,7 @@ export function Player() {
             return null;
         }
     }, [authenticator]);
+    useRedirectBackButton(`/servers/${emby?.getServerId()}`);
     const player = useMemo(() => {
         if (emby) {
             return new EmbyPlayer(emby, options);

@@ -1,25 +1,29 @@
 import React, { ReactNode, useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout as LayoutAnt, Menu, notification } from 'antd';
-import styles from './Layout.module.scss';
 import { Latency } from './Latency';
 import { useRoomInfo } from '../../features/socket/hooks';
 import { RoomBox } from './RoomBox';
 import { SocketCtx } from '../../features/socket';
-import { EmbyCtx } from '../../features/emby/embyCtx';
+import { EmbyCtx } from '../../features/emby';
+import { Event, MenubarCtx, useMenubarConfiguration } from '../../features/menubar';
 import { Options } from './Options';
+import { LeftOutlined } from '@ant-design/icons';
+import styles from './Layout.module.scss';
 
-const { Header, Content, Footer } = LayoutAnt;
+const {Header, Content, Footer} = LayoutAnt;
 
 interface Props {
     children: ReactNode;
     isAuthenticated: boolean
 }
 
-export function Layout({ children, isAuthenticated }: Props) {
-    const { authenticator } = useContext(EmbyCtx);
-    const { connected: roomConnected } = useRoomInfo();
-    const { socket } = useContext(SocketCtx);
+export function Layout({children, isAuthenticated}: Props) {
+    const {menubarController} = useContext(MenubarCtx);
+    const menubarConfig = useMenubarConfiguration();
+    const {authenticator} = useContext(EmbyCtx);
+    const {connected: roomConnected} = useRoomInfo();
+    const {socket} = useContext(SocketCtx);
     const [optionsShow, setOptionsShow] = useState<boolean>(false);
 
     const leaveRoom = () => {
@@ -34,7 +38,12 @@ export function Layout({ children, isAuthenticated }: Props) {
     return (
         <LayoutAnt className={styles.layout}>
             <Header className={styles.header}>
-                <Menu theme="dark" mode="horizontal">
+                <Menu theme="dark" mode="horizontal" selectable={false}>
+                    <Menu.Item
+                        icon={<LeftOutlined />}
+                        onClick={(evt) => menubarController.emit(Event.BACK_BUTTON_CLICK, evt)}
+                        disabled={!menubarConfig.enableBackButton}
+                    />
                     <Menu.Item onClick={() => setOptionsShow(true)}>Options</Menu.Item>
                     {
                         (isAuthenticated)
@@ -44,7 +53,7 @@ export function Layout({ children, isAuthenticated }: Props) {
                     {
                         (roomConnected)
                         && <Menu.Item onClick={leaveRoom} style={{float: 'right'}}>Leave room</Menu.Item>
-                        }
+                    }
                 </Menu>
                 <Options visible={optionsShow} onClose={() => setOptionsShow(false)} />
             </Header>
@@ -52,8 +61,8 @@ export function Layout({ children, isAuthenticated }: Props) {
                 {children}
                 <RoomBox />
             </Content>
-            <Footer style={{textAlign: 'center'}}>
-                EmbySync, 2020
+            <Footer className={styles.footer}>
+                EmbySync, {(new Date()).getFullYear()}
                 <Latency />
             </Footer>
         </LayoutAnt>
