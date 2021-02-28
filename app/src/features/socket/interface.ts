@@ -40,6 +40,13 @@ export interface Message {
     message: string;
 }
 
+export interface ProgressReportI {
+    positionTicks: number;
+    isMuted: boolean;
+    isPaused: boolean;
+    volumeLevel: number;
+}
+
 export interface PlayItemI {
     user_to_wait: number;
 }

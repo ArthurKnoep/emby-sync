@@ -16,7 +16,7 @@ interface Props {
     progress?: number
     hasBeenPlayed?: boolean
     childrenElementCount?: number
-    onPlayClick?: (itemId: string) => void
+    onPlayClick?: (itemId: string, itemName: string) => void
 }
 
 export function Item(
@@ -37,7 +37,7 @@ export function Item(
 
     const handleClick = () => {
         if (onPlayClick) {
-            onPlayClick(itemId);
+            onPlayClick(itemId, primaryText);
         }
     }
 
@@ -80,12 +80,20 @@ export function Item(
                 </div>
             </div>
             <div className={styles.subText} style={{width}}>
-                <Typography.Paragraph className={styles.primaryText}>{primaryText}</Typography.Paragraph>
+                <Typography.Paragraph
+                    className={styles.primaryText}
+                >
+                    {primaryText}
+                </Typography.Paragraph>
                 {
                     (secondaryText)
                     && (
-                        <Typography.Paragraph type="secondary"
-                                              className={styles.secondaryText}>{secondaryText}</Typography.Paragraph>
+                        <Typography.Paragraph
+                            type="secondary"
+                            className={styles.secondaryText}
+                        >
+                            {secondaryText}
+                        </Typography.Paragraph>
                     )
                 }
             </div>

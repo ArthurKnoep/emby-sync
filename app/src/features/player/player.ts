@@ -59,7 +59,10 @@ export class Player {
     private handlePlaybackReport = async () => {
         console.log('is reporting');
         try {
-            await this.embyPlayer.reportProgress();
+            await Promise.all([
+                this.socket.reportProgress(this.videoElement!),
+                this.embyPlayer.reportProgress(),
+            ]);
         } catch (e) {
             console.error('Unable to report progress', e);
         }

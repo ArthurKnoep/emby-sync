@@ -28,6 +28,7 @@ export class Handler {
 
             socket.on('play:loaded', this.handleItemLoaded(socket));
             socket.on('play:start', this.handlePlayStart(socket));
+            socket.on('play:report', this.handlePlayReport(socket));
             socket.on('play:stop', this.handlePlayStop(socket));
 
             socket.on('disconnect', () => {
@@ -147,6 +148,17 @@ export class Handler {
                 return socket.emit('play:start', errorToInterface(e));
             }
             return socket.emit('play:start', {status: true});
+        }
+    }
+
+    handlePlayReport(socket: Socket) {
+        return msg => {
+            try {
+                this.pool.playReported(socket.id, msg);
+            } catch (e) {
+                return socket.emit('play:report', errorToInterface(e));
+            }
+            return socket.emit('play:report', {status: true})
         }
     }
 

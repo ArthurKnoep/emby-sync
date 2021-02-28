@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { notification, Spin, Typography } from 'antd';
 import { Redirect } from 'react-router-dom';
 import classNames from 'classnames';
-import { EmbyCtx } from '../../../features/emby/embyCtx';
+import { EmbyCtx } from '../../../features/emby';
 import { ItemI } from '../../../features/emby/interface';
 import { Item } from '../Item';
 import globalStyles from '../Server.module.scss';
@@ -11,7 +11,7 @@ import styles from './LastItems.module.scss';
 interface Props {
     collectionType: 'movies' | 'tvshows'
     title: string
-    onItemStartPlay?: (itemId: string) => void
+    onItemStartPlay?: (itemId: string, itemName: string) => void
 }
 
 export function LastItems({ collectionType, title, onItemStartPlay }: Props) {
@@ -51,9 +51,9 @@ export function LastItems({ collectionType, title, onItemStartPlay }: Props) {
         }
     }, [collectionType, emby, setLoading, setItems]);
 
-    const handlePlayClick = (itemId: string) => {
+    const handlePlayClick = (itemId: string, itemName: string) => {
         if (onItemStartPlay) {
-            onItemStartPlay(itemId);
+            onItemStartPlay(itemId, itemName);
         }
     }
 

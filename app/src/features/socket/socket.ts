@@ -1,7 +1,15 @@
 import io from 'socket.io-client';
 import { notification } from 'antd';
 import { CancelablePromise } from '../../utils';
-import { CreateRoomRequest, JoinRoomRequest, PlayItemI, Response, ResponseWithData, UserInRoomI } from './interface';
+import {
+    CreateRoomRequest,
+    JoinRoomRequest,
+    PlayItemI,
+    ProgressReportI,
+    Response,
+    ResponseWithData,
+    UserInRoomI
+} from './interface';
 
 export class Socket {
     private readonly socket: SocketIOClient.Socket;
@@ -136,7 +144,7 @@ export class Socket {
         });
     }
 
-    async playItem(serverId: string, itemId: string): Promise<ResponseWithData<PlayItemI>> {
+    async playItem(serverId: string, itemId: string, itemName: string): Promise<ResponseWithData<PlayItemI>> {
         await this.waitForConnection();
         return new Promise((resolve, reject) => {
             this.socket.once('room:play', (resp: ResponseWithData<PlayItemI>) => {
@@ -145,7 +153,7 @@ export class Socket {
                 }
                 return reject(resp);
             });
-            this.socket.emit('room:play', {server_id: serverId, item_id: itemId});
+            this.socket.emit('room:play', {server_id: serverId, item_id: itemId, item_name: itemName});
         });
     }
 
@@ -159,6 +167,25 @@ export class Socket {
                 return reject(resp);
             });
             this.socket.emit('play:start');
+        });
+    }
+
+    async reportProgress(videoElem: HTMLVideoElement): Promise<Response> {
+        await this.waitForConnection();
+        const reportMsg: ProgressReportI = {
+            isMuted: videoElem.muted,
+            isPaused: videoElem.paused,
+            positionTicks: Math.round(videoElem.currentTime * 1000),
+            volumeLevel: Math.round(videoElem.volume * 100),
+        };
+        return new Promise((resolve, reject) => {
+           this.socket.once('play:report', (resp: Response) => {
+               if (resp.status) {
+                   return resolve(resp);
+               }
+               return reject(resp);
+           });
+           this.socket.emit('play:report', reportMsg);
         });
     }
 

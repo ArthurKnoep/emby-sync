@@ -25,10 +25,10 @@ export function Server() {
     }, [authenticator]);
     useRedirectBackButton('/servers');
 
-    const handleItemClick = (itemId: string) => {
+    const handleItemClick = (itemId: string, itemName: string) => {
         (async () => {
             try {
-                const resp = await socket.playItem(authenticator.getEmby().getServerId(), itemId);
+                const resp = await socket.playItem(authenticator.getEmby().getServerId(), itemId, itemName);
                 playerContext.setContext({
                     serverId: authenticator.getEmby().getServerId(),
                     itemId

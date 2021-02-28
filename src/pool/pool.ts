@@ -10,18 +10,28 @@ import {
     UserNotFoundError
 } from './error';
 
+enum RoomState {
+    IDLE,
+    WAIT_SYNC,
+    PLAYING,
+}
+
+enum UserState {
+    IDLE,
+    PLAY,
+}
+
 interface UserI {
     socket: Socket
     connexionDate: Date
     username?: string
     uuid: string
-    currentRoom: string
-}
-
-enum State {
-    IDLE,
-    WAIT_SYNC,
-    PLAYING
+    currentRoom: string,
+    state: UserState,
+    lastReport?: {
+        date: Date,
+        data: ProgressI,
+    },
 }
 
 interface RoomI {
@@ -29,7 +39,8 @@ interface RoomI {
     needPassword: boolean
     password: string
     admin_user_id: string
-    state: State
+    state: RoomState
+    itemName: string
 }
 
 interface PoolI {
@@ -46,6 +57,14 @@ interface UserInRoom {
 interface Item {
     server_id: string;
     item_id: string;
+    item_name: string;
+}
+
+interface ProgressI {
+    positionTicks: number;
+    isMuted: boolean;
+    isPaused: boolean;
+    volumeLevel: number;
 }
 
 export class Pool {
@@ -68,7 +87,8 @@ export class Pool {
             socket,
             uuid: uuid(),
             connexionDate: new Date(),
-            currentRoom: ''
+            currentRoom: '',
+            state: UserState.IDLE,
         };
     }
 
@@ -120,7 +140,8 @@ export class Pool {
             needPassword: false,
             password: "",
             admin_user_id: user.socket.id,
-            state: State.IDLE,
+            state: RoomState.IDLE,
+            itemName: "",
         };
         if (password && password !== '') {
             room.needPassword = true;
@@ -235,7 +256,18 @@ export class Pool {
             if (userId !== room.admin_user_id) {
                 return reject(new NotRoomMaster());
             }
-            room.state = State.WAIT_SYNC;
+            room.state = RoomState.WAIT_SYNC;
+            room.itemName = item.item_name;
+            user.state = UserState.PLAY;
+            user.lastReport = {
+                date: new Date(),
+                data: {
+                    positionTicks: 0,
+                    isMuted: false,
+                    isPaused: true,
+                    volumeLevel: 100,
+                }
+            }
             user.socket.broadcast.to(user.currentRoom).emit('room:onplay', item);
             this.io.in(room.name).clients((err, clients) => {
                 if (err) {
@@ -280,8 +312,29 @@ export class Pool {
         if (userId !== room.admin_user_id) {
             throw new NotRoomMaster();
         }
-        room.state = State.PLAYING;
+        room.state = RoomState.PLAYING;
+        user.lastReport = {
+            date: new Date(),
+            data: {
+                positionTicks: 0,
+                isMuted: false,
+                isPaused: false,
+                volumeLevel: 100,
+            }
+        }
         user.socket.broadcast.to(room.name).emit('play:started');
+    }
+
+    playReported(userId: string, report: ProgressI) {
+        const user = this.getUserAndThrow(userId);
+        if (!user.currentRoom) {
+            throw new NotInARoomError();
+        }
+        user.state = UserState.PLAY;
+        user.lastReport = {
+            date: new Date(),
+            data: report,
+        };
     }
 
     playStopped(userId: string) {
@@ -293,8 +346,11 @@ export class Pool {
         if (!room) {
             throw new RoomNotFoundError();
         }
+        user.state = UserState.IDLE;
+        user.lastReport = undefined;
         if (userId === room.admin_user_id) {
-            room.state = State.IDLE;
+            room.state = RoomState.IDLE;
+            room.itemName = '';
             user.socket.broadcast.to(room.name).emit('play:stopped');
         }
     }

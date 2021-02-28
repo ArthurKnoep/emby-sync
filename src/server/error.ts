@@ -1,5 +1,3 @@
-import { PoolError } from '../pool';
-
 export interface ErrI {
     status: false;
     code: string;

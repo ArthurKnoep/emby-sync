@@ -9,7 +9,7 @@ import globalStyles from '../Server.module.scss';
 import styles from './Resume.module.scss';
 
 interface Props {
-    onItemClick?: (itemId: string) => void
+    onItemClick?: (itemId: string, itemName: string) => void
 }
 
 export function Resume({ onItemClick }: Props) {
@@ -40,9 +40,9 @@ export function Resume({ onItemClick }: Props) {
         }
     }, [emby]);
 
-    const handleItemClick = (itemId: string) => {
+    const handleItemClick = (itemId: string, itemName: string) => {
         if (onItemClick) {
-            onItemClick(itemId);
+            onItemClick(itemId, itemName);
         }
     }
 
