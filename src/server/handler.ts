@@ -30,6 +30,8 @@ export class Handler {
             socket.on('play:start', this.handlePlayStart(socket));
             socket.on('play:report', this.handlePlayReport(socket));
             socket.on('play:stop', this.handlePlayStop(socket));
+            socket.on('play:pause', this.handlePlayPause(socket, false));
+            socket.on('play:unpause', this.handlePlayPause(socket, true))
 
             socket.on('disconnect', () => {
                 this.pool.delUser(socket.id);
@@ -171,5 +173,16 @@ export class Handler {
             }
             return socket.emit('play:stop', {status: true});
         }
+    }
+
+    handlePlayPause(socket: Socket, state: boolean) {
+        return () => {
+            try {
+                this.pool.pauseUnpause(socket.id, state);
+            } catch (e) {
+                return socket.emit(state ? 'play:unpause' : 'play:pause', errorToInterface(e));
+            }
+            return socket.emit(state ? 'play:unpause' : 'play:pause', {status: true});
+        };
     }
 }

@@ -57,7 +57,6 @@ export class Player {
     }
 
     private handlePlaybackReport = async () => {
-        console.log('is reporting');
         try {
             await Promise.all([
                 this.socket.reportProgress(this.videoElement!),
@@ -105,5 +104,17 @@ export class Player {
         window.clearInterval(this.progressReportIntervalRef);
         this.embyPlayer.stop().catch(() => {});
         this.socket.getSocket().emit('play:stop');
+    }
+
+    async pausePlayback() {
+        if (this.socket.getIsMaster()) {
+            await this.socket.pausePlayback();
+        }
+    }
+
+    async unpausePlayback() {
+        if (this.socket.getIsMaster()) {
+            await this.socket.unpausePlayback();
+        }
     }
 }

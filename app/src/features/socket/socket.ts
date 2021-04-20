@@ -120,7 +120,7 @@ export class Socket {
 
     async listUserInRoom(): Promise<ResponseWithData<UserInRoomI>> {
         await this.waitForConnection();
-        return new Promise((resolve, reject) => {
+        return new Promise<ResponseWithData<UserInRoomI>>((resolve, reject) => {
             this.socket.once('room:list', (resp: ResponseWithData<UserInRoomI>) => {
                 if (resp.status) {
                     return resolve(resp);
@@ -133,7 +133,7 @@ export class Socket {
 
     async sendMessage(message: string): Promise<Response> {
         await this.waitForConnection();
-        return new Promise((resolve, reject) => {
+        return new Promise<Response>((resolve, reject) => {
             this.socket.once('room:chat', (resp: Response) => {
                 if (resp.status) {
                     return resolve(resp);
@@ -146,7 +146,7 @@ export class Socket {
 
     async playItem(serverId: string, itemId: string, itemName: string): Promise<ResponseWithData<PlayItemI>> {
         await this.waitForConnection();
-        return new Promise((resolve, reject) => {
+        return new Promise<ResponseWithData<PlayItemI>>((resolve, reject) => {
             this.socket.once('room:play', (resp: ResponseWithData<PlayItemI>) => {
                 if (resp.status) {
                     return resolve(resp);
@@ -159,7 +159,7 @@ export class Socket {
 
     async playStarted(): Promise<Response> {
         await this.waitForConnection();
-        return new Promise((resolve, reject) => {
+        return new Promise<Response>((resolve, reject) => {
             this.socket.once('play:start', (resp: Response) => {
                 if (resp.status) {
                     return resolve(resp);
@@ -167,6 +167,32 @@ export class Socket {
                 return reject(resp);
             });
             this.socket.emit('play:start');
+        });
+    }
+
+    async pausePlayback(): Promise<Response> {
+        await this.waitForConnection();
+        return new Promise<Response>((resolve, reject) => {
+            this.socket.once('play:pause', (resp: Response) => {
+                if (resp.status) {
+                    return resolve(resp);
+                }
+                return reject(resp);
+            });
+            this.socket.emit('play:pause');
+        });
+    }
+
+    async unpausePlayback() {
+        await this.waitForConnection();
+        return new Promise<Response>((resolve, reject) => {
+            this.socket.once('play:unpause', (resp: Response) => {
+                if (resp.status) {
+                    return resolve(resp);
+                }
+                return reject(resp);
+            });
+            this.socket.emit('play:unpause');
         });
     }
 
@@ -178,7 +204,7 @@ export class Socket {
             positionTicks: Math.round(videoElem.currentTime * 1000),
             volumeLevel: Math.round(videoElem.volume * 100),
         };
-        return new Promise((resolve, reject) => {
+        return new Promise<Response>((resolve, reject) => {
            this.socket.once('play:report', (resp: Response) => {
                if (resp.status) {
                    return resolve(resp);

@@ -354,4 +354,19 @@ export class Pool {
             user.socket.broadcast.to(room.name).emit('play:stopped');
         }
     }
+
+    pauseUnpause(userId: string, state: boolean) {
+        const user = this.getUserAndThrow(userId);
+        if (!user.currentRoom) {
+            throw new NotInARoomError();
+        }
+        const room = this.getRoom(user.currentRoom);
+        if (!room) {
+            throw new RoomNotFoundError();
+        }
+        if (userId !== room.admin_user_id) {
+            throw new NotRoomMaster();
+        }
+        user.socket.broadcast.to(room.name).emit(state ? 'play:unpaused' : 'play:paused')
+    }
 }

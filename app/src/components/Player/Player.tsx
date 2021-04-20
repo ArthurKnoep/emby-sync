@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useMemo, useEffect, useCallback, } from 'react';
+import React, { useContext, useRef, useMemo, useEffect, useCallback } from 'react';
 import { Redirect, useHistory } from 'react-router-dom';
 import HLS from 'hls.js';
 import { notification, Row, Col } from 'antd';
@@ -29,7 +29,7 @@ export function Player() {
             return new PlayerController(emby, socket, options);
         }
     }, [emby, socket, options, info]);
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
 
     // init item playback
     useEffect(() => {
@@ -66,6 +66,42 @@ export function Player() {
         }
     }, [socket, handleMasterStop]);
 
+    // handle non master play/pause
+    const handlePlayPauseNonMaster = useCallback((state: boolean) => () => {
+        if (state) {
+            videoRef.current?.play();
+        } else {
+            videoRef.current?.pause();
+        }
+    }, [videoRef]);
+    useEffect(() => {
+        if (!socket.getIsMaster()) {
+            const pauseCb = handlePlayPauseNonMaster(false);
+            const playCb = handlePlayPauseNonMaster(true);
+            socket.getSocket().on('play:paused', pauseCb);
+            socket.getSocket().on('play:unpaused', playCb);
+            return () => {
+                socket.getSocket().off('play:paused', pauseCb);
+                socket.getSocket().off('play:unpaused', playCb);
+            };
+        }
+    }, [socket, handlePlayPauseNonMaster]);
+
+    // handle master play/pause
+    const handlePlayPauseMaster = async (state: boolean) => {
+        try {
+            if (socket.getIsMaster()) {
+                if (state) {
+                    await socket.unpausePlayback();
+                } else {
+                    await socket.pausePlayback();
+                }
+            }
+        } catch (err) {
+            notification.error({ message: 'Unable to play/pause the video' });
+        }
+    };
+
     if (!connected) {
         return <Redirect to="/" />
     }
@@ -85,7 +121,13 @@ export function Player() {
     return (
         <Row>
             <Col className={styles.playerContainer} span={18} offset={1}>
-                <video className={styles.video} ref={videoRef} controls />
+                <video
+                  className={styles.video}
+                  ref={videoRef}
+                  onPause={() => handlePlayPauseMaster(false)}
+                  onPlay={() => handlePlayPauseMaster(true)}
+                  controls={socket.getIsMaster()}
+                />
             </Col>
         </Row>
     )
